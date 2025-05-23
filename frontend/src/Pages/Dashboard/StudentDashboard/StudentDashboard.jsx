@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUserMd, FaBookMedical, FaCalendarAlt, FaChartLine, FaGraduationCap, FaBell, FaSignOutAlt } from "react-icons/fa";
-import logo from '../../../Images/logo.svg';
 import axios from "axios";
 
 const StudentDashboard = () => {
-  const { data } = useParams();
+  const { ID } = useParams();
   const navigate = useNavigate();
   const [studentData, setStudentData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,19 +14,23 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchStudentData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/student/${data}`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/student/${ID}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           withCredentials: true
         });
-        setStudentData(response.data.data);
+        setStudentData(response.data.data.student);
         setLoading(false);
       } catch (err) {
         setError("Failed to fetch student data");
         setLoading(false);
+        if (err.response?.status === 401) {
+          navigate('/login');
+        }
       }
     };
 
     fetchStudentData();
-  }, [data]);
+  }, [ID, navigate]);
 
   if (loading) {
     return (
@@ -164,7 +167,7 @@ const StudentDashboard = () => {
                 Access your enrolled medical courses and learning materials
               </p>
               <button
-                onClick={() => navigate(`/student/courses/${data}`)}
+                onClick={() => navigate(`/Student/Dashboard/${ID}/Courses`)}
                 className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
               >
                 View Courses
@@ -187,7 +190,7 @@ const StudentDashboard = () => {
                 Track your progress and achievements in medical education
               </p>
               <button
-                onClick={() => navigate(`/student/progress/${data}`)}
+                onClick={() => navigate(`/Student/Dashboard/${ID}/Progress`)}
                 className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors"
               >
                 View Progress

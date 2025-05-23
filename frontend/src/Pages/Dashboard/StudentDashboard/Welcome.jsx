@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUserMd, FaBookMedical, FaCalendarAlt, FaChartLine, FaGraduationCap, FaBell, FaSignOutAlt } from "react-icons/fa";
-import logo from '../../../Images/logo.svg';
 import axios from "axios";
 
 const StudentDashboard = () => {

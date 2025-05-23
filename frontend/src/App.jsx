@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider } from './context/AuthContext';
@@ -38,7 +38,7 @@ const Loading = () => (
 );
 
 // Protected Route Component
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -49,7 +49,7 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return <Outlet />;
 };
 
 const AppContent = () => {
@@ -86,7 +86,7 @@ const AppContent = () => {
             />
             
             {/* Protected Routes */}
-            <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
+            <Route element={<ProtectedRoute />}>
               <Route path="/anatomy" element={<Anatomy3D />} />
               
               {/* Student Dashboard Routes */}

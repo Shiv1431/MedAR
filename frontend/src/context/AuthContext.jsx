@@ -13,12 +13,22 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      verifyToken(token);
-    } else {
-      setLoading(false);
-    }
+    const initializeAuth = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          await verifyToken(token);
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        localStorage.removeItem('token');
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
   const verifyToken = async (token) => {
@@ -32,15 +42,13 @@ export const AuthProvider = ({ children }) => {
       if (response.success) {
         setUser(response.user);
       } else {
-        localStorage.removeItem('token');
-        setUser(null);
+        throw new Error('Token verification failed');
       }
     } catch (error) {
       console.error('Token verification failed:', error);
       localStorage.removeItem('token');
       setUser(null);
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
 
@@ -54,7 +62,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         setUser(user);
         toast.success('Login successful!');
-        navigate('/student/dashboard');
+        navigate('/Student/Dashboard/' + user._id + '/Welcome');
       } else {
         toast.error(response.message || 'Login failed');
       }

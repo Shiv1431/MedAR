@@ -7,6 +7,8 @@ import Navbar from "../../Components/Navbar/Navbar";
 import Footer from '../../Components/Footer/Footer';
 import { useAuth } from "../../context/AuthContext";
 import './Login.css';
+import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -66,20 +68,12 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const userData = await login(formData.email, formData.password, formData.userType);
-      if (userData && userData._id) {
-        // Navigate based on user type
-        if (formData.userType === 'student') {
-          navigate(`/Student/Dashboard/${userData._id}/Welcome`);
-        } else if (formData.userType === 'teacher') {
-          navigate(`/Teacher/Dashboard/${userData._id}/Home`);
-        } else {
-          navigate(`/User/Dashboard/${userData._id}`);
-        }
-      } else {
-        throw new Error("User data is incomplete");
+      const result = await login(formData.email, formData.password, formData.userType);
+      if (result.success) {
+        navigate(result.redirectPath);
       }
     } catch (error) {
+      console.error('Login error:', error);
       setErrors(prev => ({
         ...prev,
         submit: error.message || "Login failed. Please try again."

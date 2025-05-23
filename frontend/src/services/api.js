@@ -40,13 +40,33 @@ api.interceptors.response.use(
 // Auth methods
 export const login = async (email, password, userType) => {
   try {
+    console.log('Making login request with:', { email, password, userType });
     const response = await api.post(`/${userType}/login`, {
       Email: email,
       Password: password
     });
-    return response.data;
+    console.log('Login response:', response);
+    
+    if (response.success) {
+      return {
+        success: true,
+        data: {
+          token: response.token,
+          user: response.user
+        }
+      };
+    } else {
+      return {
+        success: false,
+        message: response.message || 'Login failed'
+      };
+    }
   } catch (error) {
-    throw error;
+    console.error('Login API error:', error.response?.data || error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Login failed. Please try again.'
+    };
   }
 };
 
@@ -78,13 +98,29 @@ export const verifyToken = async (userType) => {
 };
 
 // Profile methods
-export const getProfile = async () => {
+export const getProfile = async (userType, userId) => {
   try {
-    const response = await api.get('/student/profile');
-    return response;
+    console.log(`Fetching ${userType} profile for ID:`, userId);
+    const response = await api.get(`/${userType}/StudentDocument/${userId}`);
+    console.log('Profile response:', response.data);
+    
+    if (response.data && response.data.data) {
+      return {
+        success: true,
+        data: response.data.data.student
+      };
+    } else {
+      return {
+        success: false,
+        message: 'No profile data found'
+      };
+    }
   } catch (error) {
-    console.error('Get profile error:', error);
-    throw error;
+    console.error('Error fetching profile:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to fetch profile data'
+    };
   }
 };
 

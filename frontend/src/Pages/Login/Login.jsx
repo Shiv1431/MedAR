@@ -67,27 +67,29 @@ export default function Login() {
 
     setLoading(true);
     try {
-      console.log('Submitting login with data:', formData); // Debug log
+      console.log('Submitting login with data:', formData);
       const result = await login(formData.email, formData.password, formData.userType);
-      console.log('Login result:', result); // Debug log
+      console.log('Login result:', result);
       
-      if (result.success) {
-        // Store user type in localStorage
+      if (result.success && result.data) {
+        // Store user type and token in localStorage
         localStorage.setItem('userType', formData.userType);
+        localStorage.setItem('token', result.data.token);
         
-        // Ensure we're using the correct path based on userType
+        // Navigate based on user type
         const redirectPath = formData.userType === 'student' 
-          ? `/Student/Dashboard/${result.user._id}/Welcome`
-          : `/Teacher/Dashboard/${result.user._id}/Welcome`;
+          ? `/Student/Dashboard/${result.data.user._id}/Welcome`
+          : `/Teacher/Dashboard/${result.data.user._id}/Welcome`;
         
-        console.log('Redirecting to:', redirectPath); // Debug log
+        console.log('Redirecting to:', redirectPath);
         navigate(redirectPath);
       } else {
+        const errorMessage = result.message || "Login failed. Please try again.";
         setErrors(prev => ({
           ...prev,
-          submit: result.message || "Login failed. Please try again."
+          submit: errorMessage
         }));
-        toast.error(result.message || "Login failed. Please try again.");
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error('Login error:', error);

@@ -1,188 +1,175 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { FaBookOpen, FaUserGraduate, FaCalendarAlt, FaChartLine, FaCheckCircle, FaVrCardboard, FaBookMedical, FaUserMd } from 'react-icons/fa';
-import { Link, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import { FaUserMd, FaBookMedical, FaCalendarAlt, FaChartLine, FaGraduationCap, FaBell, FaSignOutAlt } from "react-icons/fa";
+import logo from '../../../Images/logo.svg';
+import axios from "axios";
 
-const Welcome = () => {
+const StudentDashboard = () => {
   const { ID } = useParams();
+  const navigate = useNavigate();
+  const [studentData, setStudentData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/student/${ID}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          withCredentials: true
+        });
+        setStudentData(response.data.data.student);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch student data");
+        setLoading(false);
+        if (err.response?.status === 401) {
+          navigate('/login');
+        }
+      }
+    };
+
+    fetchStudentData();
+  }, [ID, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+        <div className="text-red-600 text-xl">{error}</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Header */}
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      {/* Welcome Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white rounded-xl shadow-md p-6"
+        className="bg-white rounded-xl shadow-lg p-6 mb-8"
       >
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back!</h1>
-        <p className="text-gray-600">Track your learning progress and access your courses</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Welcome, {studentData?.Firstname}!
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Track your medical education journey
+            </p>
+          </div>
+          <div className="bg-blue-100 p-4 rounded-full">
+            <FaUserMd className="h-8 w-8 text-blue-600" />
+          </div>
+        </div>
       </motion.div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          icon={<FaBookOpen className="text-blue-500" size={24} />}
-          title="Enrolled Courses"
-          value="5"
-          description="Active courses"
-          color="blue"
-        />
-        <StatCard 
-          icon={<FaUserGraduate className="text-green-500" size={24} />}
-          title="Learning Hours"
-          value="24.5"
-          description="This week"
-          color="green"
-        />
-        <StatCard 
-          icon={<FaCalendarAlt className="text-purple-500" size={24} />}
-          title="Upcoming"
-          value="3"
-          description="Sessions this week"
-          color="purple"
-        />
-        <StatCard 
-          icon={<FaChartLine className="text-yellow-500" size={24} />}
-          title="Progress"
-          value="78%"
-          description="Overall completion"
-          color="yellow"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="bg-white rounded-xl shadow-lg p-6"
+        >
+          <div className="flex items-center">
+            <div className="bg-green-100 p-3 rounded-full mr-4">
+              <FaBookMedical className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-gray-600">Enrolled Courses</p>
+              <p className="text-2xl font-bold text-gray-900">5</p>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="bg-white rounded-xl shadow-lg p-6"
+        >
+          <div className="flex items-center">
+            <div className="bg-blue-100 p-3 rounded-full mr-4">
+              <FaCalendarAlt className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-gray-600">Upcoming Classes</p>
+              <p className="text-2xl font-bold text-gray-900">3</p>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="bg-white rounded-xl shadow-lg p-6"
+        >
+          <div className="flex items-center">
+            <div className="bg-purple-100 p-3 rounded-full mr-4">
+              <FaChartLine className="h-6 w-6 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-gray-600">Progress</p>
+              <p className="text-2xl font-bold text-gray-900">75%</p>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Quick Actions */}
-      <QuickActions ID={ID} />
+      {/* Main Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="bg-white rounded-xl shadow-lg overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4">
+            <h2 className="text-xl font-semibold text-white flex items-center">
+              <FaBookMedical className="mr-2" />
+              My Courses
+            </h2>
+          </div>
+          <div className="p-6">
+            <p className="text-gray-600 mb-4">
+              Access your enrolled medical courses and learning materials
+            </p>
+            <button
+              onClick={() => navigate(`/Student/Dashboard/${ID}/Courses`)}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              View Courses
+            </button>
+          </div>
+        </motion.div>
 
-      {/* Recent Activity */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-white rounded-xl shadow-md p-6"
-      >
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h2>
-        <div className="space-y-4">
-          <ActivityItem 
-            title="Completed Anatomy Module 1"
-            time="2 hours ago"
-            course="Human Anatomy"
-            completed={true}
-          />
-          <ActivityItem 
-            title="New assignment available"
-            time="1 day ago"
-            course="Physiology 101"
-            completed={false}
-          />
-          <ActivityItem 
-            title="Upcoming quiz tomorrow"
-            time="2 days ago"
-            course="Biochemistry"
-            completed={false}
-          />
-        </div>
-      </motion.div>
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="bg-white rounded-xl shadow-lg overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-green-600 to-green-800 p-4">
+            <h2 className="text-xl font-semibold text-white flex items-center">
+              <FaGraduationCap className="mr-2" />
+              Learning Progress
+            </h2>
+          </div>
+          <div className="p-6">
+            <p className="text-gray-600 mb-4">
+              Track your progress and achievements in medical education
+            </p>
+            <button
+              onClick={() => navigate(`/Student/Dashboard/${ID}/Progress`)}
+              className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors"
+            >
+              View Progress
+            </button>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };
 
-const StatCard = ({ icon, title, value, description, color }) => {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-700',
-    green: 'bg-green-50 text-green-700',
-    purple: 'bg-purple-50 text-purple-700',
-    yellow: 'bg-yellow-50 text-yellow-700'
-  };
-
-  return (
-    <motion.div 
-      whileHover={{ y: -5 }}
-      className={`${colorClasses[color]} rounded-xl p-6 shadow-sm`}
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium">{title}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
-          <p className="text-xs opacity-75 mt-1">{description}</p>
-        </div>
-        <div className="p-3 bg-white bg-opacity-30 rounded-full">
-          {icon}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-const ActivityItem = ({ title, time, course, completed }) => (
-  <div className="flex items-start pb-4 border-b border-gray-100 last:border-0 last:pb-0 group">
-    <div className={`h-2 w-2 rounded-full mt-2 mr-3 ${completed ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-    <div className="flex-1">
-      <div className="flex items-start justify-between">
-        <p className="font-medium text-gray-800 group-hover:text-blue-600 transition-colors">
-          {title}
-        </p>
-        {completed && (
-          <FaCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-        )}
-      </div>
-      <div className="flex items-center text-sm text-gray-500 mt-1">
-        <span className="font-medium">{course}</span>
-        <span className="mx-2">•</span>
-        <span>{time}</span>
-      </div>
-    </div>
-  </div>
-);
-
-// Quick Actions Component
-const QuickActions = ({ ID }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <Link
-      to={`/Student/Dashboard/${ID}/AR-Anatomy`}
-      className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
-    >
-      <div className="flex items-center space-x-4">
-        <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-          <FaVrCardboard className="text-blue-600 text-xl" />
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">AR Anatomy Lab</h3>
-          <p className="text-sm text-gray-600">Explore human anatomy in AR</p>
-        </div>
-      </div>
-    </Link>
-
-    <Link
-      to={`/Student/Dashboard/${ID}/Courses`}
-      className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
-    >
-      <div className="flex items-center space-x-4">
-        <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-          <FaBookMedical className="text-green-600 text-xl" />
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">Medical Courses</h3>
-          <p className="text-sm text-gray-600">Browse available courses</p>
-        </div>
-      </div>
-    </Link>
-
-    <Link
-      to={`/Student/Dashboard/${ID}/Classes`}
-      className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
-    >
-      <div className="flex items-center space-x-4">
-        <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
-          <FaUserMd className="text-purple-600 text-xl" />
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">My Classes</h3>
-          <p className="text-sm text-gray-600">View your enrolled classes</p>
-        </div>
-      </div>
-    </Link>
-  </div>
-);
-
-export default Welcome;
+export default StudentDashboard;

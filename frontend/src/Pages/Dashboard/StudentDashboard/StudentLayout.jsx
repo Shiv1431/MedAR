@@ -1,71 +1,87 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate, useParams, Link, useLocation } from 'react-router-dom';
-import { FaBars, FaTimes, FaHome, FaBook, FaChalkboardTeacher, FaUser } from 'react-icons/fa';
+import { Outlet, NavLink, useParams, Navigate, useNavigate, Link } from 'react-router-dom';
+import { FaHome, FaSearch, FaBookMedical, FaVrCardboard, FaUserMd, FaUser, FaSignOutAlt } from 'react-icons/fa';
+import axios from 'axios';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
-import { getProfile } from '../../../services/api';
-import './StudentLayout.css';
 
 const StudentLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [studentData, setStudentData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const { ID } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { logout, userType } = useAuth();
+  const { logout } = useAuth();
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const verifyAndFetchData = async () => {
-      const token = localStorage.getItem('token');
-      const storedUserType = localStorage.getItem('userType');
-      
-      if (!token || storedUserType !== 'student') {
-        navigate('/login');
-        return;
-      }
-
+    const fetchUserData = async () => {
       try {
-        const response = await getProfile('student', ID);
-        if (response.success) {
-          setStudentData(response.data);
-        } else {
-          console.error('Failed to fetch student data');
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/student/${ID}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          withCredentials: true
+        });
+        setUserData(response.data.data.student);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        setLoading(false);
+        if (error.response?.status === 401) {
           navigate('/login');
         }
-      } catch (error) {
-        console.error('Error fetching student data:', error);
-        navigate('/login');
-      } finally {
-        setLoading(false);
       }
     };
 
-    verifyAndFetchData();
-  }, [navigate, ID]);
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchUserData();
+    } else {
+      navigate('/login');
+    }
+  }, [ID, navigate]);
 
-  const menuItems = [
-    { path: 'Welcome', icon: <FaHome />, label: 'Dashboard' },
-    { path: 'Courses', icon: <FaBook />, label: 'Courses' },
-    { path: 'ClassMentor', icon: <FaChalkboardTeacher />, label: 'Class & Mentor' },
-    { path: 'Profile', icon: <FaUser />, label: 'Profile' }
-  ];
-
-  const handleLogout = async () => {
+  const handleLogout = async (e) => {
+    e.preventDefault();
     try {
       await logout('student');
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('userType');
+      navigate('/login');
     }
   };
 
-  const isActive = (path) => {
-    return location.pathname.includes(path);
-  };
+  const navItems = [
+    {
+      path: `/Student/Dashboard/${ID}/Welcome`,
+      icon: <FaHome className="w-6 h-6" />,
+      text: 'Dashboard'
+    },
+    {
+      path: `/Student/Dashboard/${ID}/AR-Anatomy`,
+      icon: <FaVrCardboard className="w-6 h-6" />,
+      text: '3D Anatomy'
+    },
+    {
+      path: `/Student/Dashboard/${ID}/Courses`,
+      icon: <FaBookMedical className="w-6 h-6" />,
+      text: 'Medical Courses'
+    },
+    {
+      path: `/Student/Dashboard/${ID}/Classes`,
+      icon: <FaUserMd className="w-6 h-6" />,
+      text: 'My Classes'
+    },
+    {
+      path: `/Student/Dashboard/${ID}/Search`,
+      icon: <FaSearch className="w-6 h-6" />,
+      text: 'Find Mentors'
+    }
+  ];
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
       </div>
     );
@@ -74,67 +90,77 @@ const StudentLayout = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
-        <div className="sidebar-header">
-          <h2 className="text-xl font-bold text-white">MedAR</h2>
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="text-white hover:text-gray-200"
-          >
-            {isSidebarOpen ? <FaTimes /> : <FaBars />}
-          </button>
+      <div className="w-64 bg-white shadow-lg flex flex-col">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold text-blue-600">MedLearn VR</h2>
+          <p className="text-sm text-gray-600 mt-1">Medical Student Portal</p>
         </div>
-
-        {studentData && (
-          <div className="student-info">
-            <div className="student-avatar">
-              {studentData.profilePicture ? (
-                <img src={studentData.profilePicture} alt="Profile" />
+        
+        {/* Profile Section */}
+        <div className="px-4 py-3 border-t border-gray-200">
+          <Link
+            to={`/Student/Dashboard/${ID}/profile`}
+            className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+              {userData?.profilePicture ? (
+                <img 
+                  src={userData.profilePicture} 
+                  alt="Profile" 
+                  className="h-full w-full rounded-full object-cover"
+                />
               ) : (
-                <div className="avatar-placeholder">
-                  {studentData.name?.charAt(0) || 'S'}
-                </div>
+                <FaUser className="text-blue-600" />
               )}
             </div>
-            {isSidebarOpen && (
-              <div className="student-details">
-                <h3 className="student-name">{studentData.name}</h3>
-                <p className="student-role">Student</p>
-              </div>
-            )}
-          </div>
-        )}
+            <div className="text-left flex-1">
+              <p className="text-sm font-medium text-gray-900">
+                {userData?.Firstname} {userData?.Lastname}
+              </p>
+              <p className="text-xs text-gray-500">Student</p>
+            </div>
+          </Link>
+        </div>
 
-        <nav className="sidebar-nav">
-          {menuItems.map((item) => (
-            <Link
-              key={item.path}
-              to={`/Student/Dashboard/${ID}/${item.path}`}
-              className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
+        {/* Navigation */}
+        <nav className="mt-6 flex-1">
+          {navItems.map((item, index) => (
+            <NavLink
+              key={index}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center px-6 py-4 transition-colors ${
+                  isActive
+                    ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`
+              }
             >
-              <span className="nav-icon">{item.icon}</span>
-              {isSidebarOpen && <span className="nav-label">{item.label}</span>}
-            </Link>
+              {item.icon}
+              <span className="ml-3">{item.text}</span>
+            </NavLink>
           ))}
         </nav>
-
-        <div className="sidebar-footer">
+        
+        {/* Logout Button */}
+        <div className="p-4 border-t border-gray-200">
           <button
             onClick={handleLogout}
-            className="logout-button"
+            className="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
           >
-            {isSidebarOpen && <span>Logout</span>}
+            <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+              <FaSignOutAlt className="text-red-600" />
+            </div>
+            <span className="text-sm font-medium">Sign Out</span>
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-          <div className="container mx-auto px-6 py-8">
-            <Outlet context={{ studentData }} />
-          </div>
-        </main>
+      <div className="flex-1 overflow-auto">
+        <div className="p-8">
+          <Outlet context={{ userData }} />
+        </div>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import Footer from '../../Components/Footer/Footer';
 import { useAuth } from "../../context/AuthContext";
 import './Login.css';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ export default function Login() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -61,59 +63,57 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validate form first
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
+    setError('');
+
     try {
-      console.log('Submitting login with data:', formData);
+      console.log('Submitting login data:', { 
+        email: formData.email, 
+        password: formData.password, 
+        userType: formData.userType 
+      });
+      
       const result = await login(formData.email, formData.password, formData.userType);
       console.log('Login result:', result);
-      
+
       if (result.success && result.data) {
         const { user, token } = result.data;
         
-        // Store user data
-        localStorage.setItem('userType', formData.userType);
+        // Store all necessary data
+        localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('token', token);
+        localStorage.setItem('userType', formData.userType);
         localStorage.setItem('userId', user._id);
+
+        // Set default auth header for future requests
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         // Prepare redirect path
-        let redirectPath;
-        if (formData.userType === 'student') {
-          redirectPath = `/Student/Dashboard/${user._id}/Welcome`;
-        } else {
-          redirectPath = `/Teacher/Dashboard/${user._id}`;
-        }
+        const redirectPath = formData.userType === 'student' 
+          ? `/Student/Dashboard/${user._id}/Welcome`
+          : `/Teacher/Dashboard/${user._id}/Home`;
         
-        console.log('Redirecting to:', `${import.meta.env.VITE_APP_URL}${redirectPath}`);
+        console.log('Redirecting to:', redirectPath);
         
-        // Use window.location.href for absolute URL to ensure proper redirection
-        window.location.href = `${import.meta.env.VITE_APP_URL}${redirectPath}`;
+        // Use navigate for client-side routing
+        navigate(redirectPath);
+        
+        // Show success message
         toast.success('Login successful!');
       } else {
-        const errorMessage = result.message || "Login failed. Please try again.";
-        console.error('Login failed:', errorMessage);
-        setErrors(prev => ({
-          ...prev,
-          submit: errorMessage
-        }));
+        const errorMessage = result.message || 'Login failed. Please try again.';
+        setError(errorMessage);
         toast.error(errorMessage);
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error.response?.data?.message || error.message || "Login failed. Please try again.";
-      console.error('Error details:', {
-        message: errorMessage,
-        response: error.response?.data,
-        status: error.response?.status,
-        config: error.config
-      });
-      setErrors(prev => ({
-        ...prev,
-        submit: errorMessage
-      }));
+      const errorMessage = error.response?.data?.message || 'An unexpected error occurred. Please try again.';
+      setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -217,8 +217,8 @@ export default function Login() {
                   <p className="text-sm text-red-600">{errors.userType}</p>
                 )}
 
-                {errors.submit && (
-                  <p className="text-sm text-red-600">{errors.submit}</p>
+                {error && (
+                  <p className="text-sm text-red-600">{error}</p>
                 )}
 
                 <button

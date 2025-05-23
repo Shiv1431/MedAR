@@ -66,6 +66,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, userType) => {
     try {
+      console.log('Attempting login with:', { email, userType });
+      
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/login`,
         { Email: email, Password: password },
@@ -73,8 +75,7 @@ export const AuthProvider = ({ children }) => {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json'
-          },
-          timeout: 10000 // 10 second timeout
+          }
         }
       );
 
@@ -88,38 +89,59 @@ export const AuthProvider = ({ children }) => {
           return { success: false, message: 'Invalid response from server' };
         }
 
+        // Set auth state
         setUser(user);
         setUserType(userType);
+        
+        // Store in localStorage
         localStorage.setItem('token', token);
         localStorage.setItem('userType', userType);
         localStorage.setItem('userId', user._id);
 
+        // Set default auth header
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
-        return { success: true, data: response.data.data };
-      } else {
-        console.error('Unexpected response structure:', response.data);
-        return { success: false, message: 'Unexpected response from server' };
+        return { 
+          success: true, 
+          data: response.data.data,
+          message: 'Login successful'
+        };
       }
+      
+      return { 
+        success: false, 
+        message: 'Invalid response format from server'
+      };
     } catch (error) {
-      console.error('Login error details:', {
+      console.error('Login error:', {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status
       });
 
       if (error.response) {
-        switch (error.response.status) {
+        const { status, data } = error.response;
+        
+        switch (status) {
           case 400:
-            return { success: false, message: 'Invalid email or password' };
+            return { 
+              success: false, 
+              message: data?.message || 'Invalid email or password'
+            };
           case 401:
-            return { success: false, message: 'Email not verified' };
+            return { 
+              success: false, 
+              message: data?.message || 'Email not verified'
+            };
           case 403:
-            return { success: false, message: 'Incorrect password' };
+            return { 
+              success: false, 
+              message: data?.message || 'Incorrect password'
+            };
           default:
             return { 
               success: false, 
-              message: error.response.data?.message || 'Login failed. Please try again.'
+              message: data?.message || 'Login failed. Please try again.'
             };
         }
       }

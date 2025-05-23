@@ -72,6 +72,9 @@ export default function Login() {
       console.log('Login result:', result); // Debug log
       
       if (result.success) {
+        // Store user type in localStorage
+        localStorage.setItem('userType', formData.userType);
+        
         // Ensure we're using the correct path based on userType
         const redirectPath = formData.userType === 'student' 
           ? `/Student/Dashboard/${result.user._id}/Welcome`
@@ -84,13 +87,16 @@ export default function Login() {
           ...prev,
           submit: result.message || "Login failed. Please try again."
         }));
+        toast.error(result.message || "Login failed. Please try again.");
       }
     } catch (error) {
       console.error('Login error:', error);
+      const errorMessage = error.message || "Login failed. Please try again.";
       setErrors(prev => ({
         ...prev,
-        submit: error.response?.data?.message || "Login failed. Please try again."
+        submit: errorMessage
       }));
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

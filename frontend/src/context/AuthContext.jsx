@@ -59,10 +59,16 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       console.log('Login attempt with userType:', userType); // Debug log
+      
       const response = await apiLogin({ email, password, userType });
+      console.log('Login response:', response); // Debug log
 
       if (response.success) {
         const { token, user } = response.data;
+        
+        // Store user type in localStorage
+        localStorage.setItem('userType', userType);
+        
         localStorage.setItem('token', token);
         setUser(user);
         toast.success('Login successful!');
@@ -79,12 +85,13 @@ export const AuthProvider = ({ children }) => {
           redirectPath
         };
       } else {
-        toast.error(response.message || 'Login failed');
-        return { success: false, message: response.message };
+        const errorMessage = response.message || 'Login failed';
+        toast.error(errorMessage);
+        return { success: false, message: errorMessage };
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+      const errorMessage = error.message || 'Login failed. Please try again.';
       toast.error(errorMessage);
       return { success: false, message: errorMessage };
     } finally {

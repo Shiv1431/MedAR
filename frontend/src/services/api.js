@@ -42,24 +42,41 @@ export const login = async (credentials) => {
     // Format the request data according to backend expectations
     const requestData = {
       Email: credentials.email,
-      Password: credentials.password,
-      UserType: credentials.userType
+      Password: credentials.password
     };
 
     console.log('Login request data:', requestData); // Debug log
 
     // Use the correct endpoint based on user type
     const endpoint = credentials.userType === 'student' ? '/student/login' : '/teacher/login';
+    console.log('Using endpoint:', endpoint); // Debug log
+
     const response = await apiService.post(endpoint, requestData);
     console.log('Login response:', response); // Debug log
-    return response;
+
+    // Add userType to the response data
+    return {
+      ...response,
+      data: {
+        ...response.data,
+        userType: credentials.userType
+      }
+    };
   } catch (error) {
     console.error('Login error details:', {
       status: error.response?.status,
       data: error.response?.data,
       message: error.message
     });
-    throw error;
+
+    // Handle specific error cases
+    if (error.response?.status === 422) {
+      throw new Error('Invalid credentials or user does not exist');
+    } else if (error.response?.status === 404) {
+      throw new Error(`${credentials.userType} account not found`);
+    } else {
+      throw error;
+    }
   }
 };
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FaGraduationCap, FaLightbulb, FaUsers, FaBook } from 'react-icons/fa';
-import Navbar from '../../../Components/Navbar/Navbar';
-import Footer from '../../../Components/Footer/Footer';
+import Navbar from '../../../components/Navbar/Navbar';
+import Footer from '../../../components/Footer/Footer';
 
 function About() {
   const features = [

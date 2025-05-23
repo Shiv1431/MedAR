@@ -42,7 +42,7 @@ import WelcomeMedical from './Pages/Dashboard/StudentDashboard/WelcomeMedical'
 import MedicalARViewer from './Pages/Dashboard/StudentDashboard/MedicalARViewer'
 import UserDashboard from './Pages/UserDashboard/UserDashboard'
 import { AuthProvider } from './context/AuthContext'
-import ProtectedRoute from './components/ProtectedRoute'
+import ProtectedRoute from './Components/ProtectedRoute'
 
 
 const router = createBrowserRouter(

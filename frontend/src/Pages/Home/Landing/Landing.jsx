@@ -2,8 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaStethoscope, FaBookMedical, FaUserMd, FaBrain, FaHeartbeat, FaLungs } from 'react-icons/fa';
-import Navbar from '../../../Components/Navbar/Navbar';
-import Footer from '../../../Components/Footer/Footer';
+import Navbar from '../../../components/Navbar/Navbar';
+import Footer from '../../../components/Footer/Footer';
 
 const Landing = () => {
   const features = [

@@ -1,7 +1,11 @@
 // Environment variables configuration
 const env = {
   // API Configuration
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://localhost:8000/api',
+  API_BASE_URL: (() => {
+    const url = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+    // Remove trailing slash and ensure /api suffix
+    return url.replace(/\/$/, '').replace(/\/api$/, '') + '/api';
+  })(),
   
   // Frontend Configuration
   APP_NAME: import.meta.env.VITE_APP_NAME || 'MedAR',
@@ -25,9 +29,13 @@ if (missingEnvVars.length > 0) {
   );
 }
 
-// Log the API URL in development
+// Log configuration in development
 if (import.meta.env.DEV) {
-  console.log('API URL:', env.API_BASE_URL);
+  console.log('Environment Configuration:', {
+    API_BASE_URL: env.API_BASE_URL,
+    APP_URL: env.APP_URL,
+    ENABLE_LOGGING: env.ENABLE_LOGGING
+  });
 }
 
 export default env; 

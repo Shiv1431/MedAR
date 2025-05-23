@@ -2,6 +2,11 @@ import env from '../config/env';
 
 const API_URL = env.API_BASE_URL;
 
+// Debug logging
+if (import.meta.env.DEV) {
+  console.log('API URL:', API_URL);
+}
+
 const handleResponse = async (response) => {
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
@@ -16,11 +21,18 @@ const handleResponse = async (response) => {
 
 const getHeaders = () => {
   const token = localStorage.getItem('token');
-  return {
+  const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
+
+  // Debug logging
+  if (import.meta.env.DEV) {
+    console.log('Request headers:', headers);
+  }
+
+  return headers;
 };
 
 const api = {
@@ -31,8 +43,13 @@ const api = {
   },
 
   get: async (endpoint) => {
+    const url = `${API_URL}${endpoint}`;
+    if (import.meta.env.DEV) {
+      console.log('GET Request:', url);
+    }
+
     try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
+      const response = await fetch(url, {
         method: 'GET',
         credentials: 'include',
         headers: getHeaders(),
@@ -43,14 +60,21 @@ const api = {
     } catch (error) {
       if (env.ENABLE_LOGGING) {
         console.error('API Error:', error);
+        console.error('Request URL:', url);
       }
       throw error;
     }
   },
 
   post: async (endpoint, data) => {
+    const url = `${API_URL}${endpoint}`;
+    if (import.meta.env.DEV) {
+      console.log('POST Request:', url);
+      console.log('Request data:', data);
+    }
+
     try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
+      const response = await fetch(url, {
         method: 'POST',
         credentials: 'include',
         headers: getHeaders(),
@@ -62,14 +86,22 @@ const api = {
     } catch (error) {
       if (env.ENABLE_LOGGING) {
         console.error('API Error:', error);
+        console.error('Request URL:', url);
+        console.error('Request data:', data);
       }
       throw error;
     }
   },
 
   put: async (endpoint, data) => {
+    const url = `${API_URL}${endpoint}`;
+    if (import.meta.env.DEV) {
+      console.log('PUT Request:', url);
+      console.log('Request data:', data);
+    }
+
     try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
+      const response = await fetch(url, {
         method: 'PUT',
         credentials: 'include',
         headers: getHeaders(),
@@ -81,18 +113,25 @@ const api = {
     } catch (error) {
       if (env.ENABLE_LOGGING) {
         console.error('API Error:', error);
+        console.error('Request URL:', url);
+        console.error('Request data:', data);
       }
       throw error;
     }
   },
 
   delete: async (endpoint) => {
+    const url = `${API_URL}${endpoint}`;
+    if (import.meta.env.DEV) {
+      console.log('DELETE Request:', url);
+    }
+
     try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
+      const response = await fetch(url, {
         method: 'DELETE',
         credentials: 'include',
         headers: getHeaders(),
-        body: JSON.stringify({}), // Add empty body for consistency
+        body: JSON.stringify({}),
         mode: 'cors',
         cache: 'no-cache',
       });
@@ -100,6 +139,7 @@ const api = {
     } catch (error) {
       if (env.ENABLE_LOGGING) {
         console.error('API Error:', error);
+        console.error('Request URL:', url);
       }
       throw error;
     }

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import apiService from '../services/api';
+import { login as apiLogin, signup as apiSignup, logout as apiLogout } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -31,14 +31,19 @@ export const AuthProvider = ({ children }) => {
 
   const verifyToken = async (token) => {
     try {
-      const response = await apiService.get('/student/verify-token', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/student/verify-token`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       
-      if (response.success) {
-        setUser(response.user);
+      if (!response.ok) {
+        throw new Error('Token verification failed');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setUser(data.user);
       } else {
         throw new Error('Token verification failed');
       }
@@ -50,10 +55,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, userType) => {
     try {
       setLoading(true);
-      const response = await apiService.login({ email, password });
+      const response = await apiLogin({ email, password, userType });
 
       if (response.success) {
         const { token, user } = response;
@@ -73,8 +78,9 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(error.response?.data?.message || 'Login failed. Please try again.');
-      return { success: false, message: error.response?.data?.message };
+      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+      toast.error(errorMessage);
+      return { success: false, message: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -83,7 +89,7 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     try {
       setLoading(true);
-      const response = await apiService.signup(userData);
+      const response = await apiSignup(userData);
       
       if (response.success) {
         toast.success('Signup successful! Please verify your email.');
@@ -94,8 +100,9 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Signup error:', error);
-      toast.error(error.response?.data?.message || 'Signup failed. Please try again.');
-      return { success: false, message: error.response?.data?.message };
+      const errorMessage = error.response?.data?.message || 'Signup failed. Please try again.';
+      toast.error(errorMessage);
+      return { success: false, message: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -104,7 +111,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       setLoading(true);
-      await apiService.logout();
+      await apiLogout();
       localStorage.removeItem('token');
       setUser(null);
       toast.success('Logged out successfully!');

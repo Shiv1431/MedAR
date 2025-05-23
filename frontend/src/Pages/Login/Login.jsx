@@ -14,7 +14,7 @@ export default function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    userType: "student" // Set default user type
+    userType: "student" // Default user type
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -68,15 +68,23 @@ export default function Login() {
 
     setLoading(true);
     try {
+      console.log('Submitting login with data:', formData); // Debug log
       const result = await login(formData.email, formData.password, formData.userType);
+      console.log('Login result:', result); // Debug log
+      
       if (result.success) {
         navigate(result.redirectPath);
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          submit: result.message || "Login failed. Please try again."
+        }));
       }
     } catch (error) {
       console.error('Login error:', error);
       setErrors(prev => ({
         ...prev,
-        submit: error.message || "Login failed. Please try again."
+        submit: error.response?.data?.message || "Login failed. Please try again."
       }));
     } finally {
       setLoading(false);

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://medarbackend.vercel.app/api';
 
-const axiosInstance = axios.create({
+const apiService = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
   headers: {
@@ -11,7 +11,7 @@ const axiosInstance = axios.create({
 });
 
 // Request interceptor
-axiosInstance.interceptors.request.use(
+apiService.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -25,8 +25,8 @@ axiosInstance.interceptors.request.use(
 );
 
 // Response interceptor
-axiosInstance.interceptors.response.use(
-  (response) => response,
+apiService.interceptors.response.use(
+  (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
@@ -36,104 +36,128 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-const apiService = {
-  // Auth methods
-  login: async (data) => {
-    try {
-      const response = await axiosInstance.post('/student/login', data);
-      return response.data;
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
-  },
+// Auth methods
+export const login = async (credentials) => {
+  try {
+    // Format the request data according to backend expectations
+    const requestData = {
+      email: credentials.email,
+      password: credentials.password,
+      userType: credentials.userType // Changed from role to userType to match backend
+    };
 
-  signup: async (data) => {
-    try {
-      const response = await axiosInstance.post('/student/signup', data);
-      return response.data;
-    } catch (error) {
-      console.error('Signup error:', error);
-      throw error;
-    }
-  },
+    console.log('Login request data:', requestData); // Debug log
 
-  logout: async () => {
-    try {
-      const response = await axiosInstance.post('/student/logout');
-      localStorage.removeItem('token');
-      return response.data;
-    } catch (error) {
-      console.error('Logout error:', error);
-      throw error;
-    }
-  },
+    const response = await apiService.post('/student/login', requestData);
+    console.log('Login response:', response); // Debug log
+    return response;
+  } catch (error) {
+    console.error('Login error details:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    throw error;
+  }
+};
 
-  // Profile methods
-  getProfile: async (id) => {
-    try {
-      const response = await axiosInstance.get(`/student/StudentDocument/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error('Get profile error:', error);
-      throw error;
-    }
-  },
+export const signup = async (userData) => {
+  try {
+    const response = await apiService.post('/student/signup', userData);
+    return response;
+  } catch (error) {
+    console.error('Signup error:', error);
+    throw error;
+  }
+};
 
-  updateProfile: async (data) => {
-    try {
-      const response = await axiosInstance.put('/student/profile/update', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Update profile error:', error);
-      throw error;
-    }
-  },
+export const logout = async () => {
+  try {
+    const response = await apiService.post('/student/logout');
+    return response;
+  } catch (error) {
+    console.error('Logout error:', error);
+    throw error;
+  }
+};
 
-  // Generic methods
-  get: async (url, config = {}) => {
-    try {
-      const response = await axiosInstance.get(url, config);
-      return response.data;
-    } catch (error) {
-      console.error('GET request error:', error);
-      throw error;
-    }
-  },
+// Profile methods
+export const getProfile = async () => {
+  try {
+    const response = await apiService.get('/student/profile');
+    return response;
+  } catch (error) {
+    console.error('Get profile error:', error);
+    throw error;
+  }
+};
 
-  post: async (url, data, config = {}) => {
-    try {
-      const response = await axiosInstance.post(url, data, config);
-      return response.data;
-    } catch (error) {
-      console.error('POST request error:', error);
-      throw error;
-    }
-  },
+export const updateProfile = async (profileData) => {
+  try {
+    const response = await apiService.put('/student/profile', profileData);
+    return response;
+  } catch (error) {
+    console.error('Update profile error:', error);
+    throw error;
+  }
+};
 
-  put: async (url, data, config = {}) => {
-    try {
-      const response = await axiosInstance.put(url, data, config);
-      return response.data;
-    } catch (error) {
-      console.error('PUT request error:', error);
-      throw error;
-    }
-  },
+export const uploadProfileImage = async (imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append('profileImage', imageFile);
+    
+    const response = await apiService.post('/student/profile/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error('Upload profile image error:', error);
+    throw error;
+  }
+};
 
-  delete: async (url, config = {}) => {
-    try {
-      const response = await axiosInstance.delete(url, config);
-      return response.data;
-    } catch (error) {
-      console.error('DELETE request error:', error);
-      throw error;
-    }
-  },
+// Generic methods
+const get = async (url, config = {}) => {
+  try {
+    const response = await apiService.get(url, config);
+    return response;
+  } catch (error) {
+    console.error('GET request error:', error);
+    throw error;
+  }
+};
+
+const post = async (url, data, config = {}) => {
+  try {
+    const response = await apiService.post(url, data, config);
+    return response;
+  } catch (error) {
+    console.error('POST request error:', error);
+    throw error;
+  }
+};
+
+const put = async (url, data, config = {}) => {
+  try {
+    const response = await apiService.put(url, data, config);
+    return response;
+  } catch (error) {
+    console.error('PUT request error:', error);
+    throw error;
+  }
+};
+
+const deleteRequest = async (url, config = {}) => {
+  try {
+    const response = await apiService.delete(url, config);
+    return response;
+  } catch (error) {
+    console.error('DELETE request error:', error);
+    throw error;
+  }
 };
 
 export default apiService;

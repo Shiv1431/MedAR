@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://medarbackend.vercel.app/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://medarbackend.vercel.app/api';
 
 // Create axios instance with base URL
 const api = axios.create({
@@ -30,6 +30,9 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
+      localStorage.removeItem('userType');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -90,9 +93,16 @@ export const logout = async (userType) => {
 export const verifyToken = async (userType) => {
   try {
     const response = await api.get(`/${userType}/verify-token`);
-    return response.data;
+    return {
+      success: true,
+      data: response.data.data
+    };
   } catch (error) {
-    throw error.response?.data || error.message;
+    console.error('Token verification error:', error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Token verification failed'
+    };
   }
 };
 

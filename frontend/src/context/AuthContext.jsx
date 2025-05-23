@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import { login as apiLogin, signup as apiSignup, logout as apiLogout, verifyToken } from '../services/api';
+import { login as apiLogin, signup as apiSignup, logout as apiLogout, verifyToken as apiVerifyToken } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -25,40 +25,18 @@ export const AuthProvider = ({ children }) => {
           return;
         }
 
-        // Remove any trailing /api from base URL
-        const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
-        const verifyUrl = `${baseUrl}/api/${storedUserType}/verify-token`;
-
-        console.log('Verifying token at:', verifyUrl);
+        const response = await apiVerifyToken(storedUserType);
         
-        const response = await axios.get(
-          verifyUrl,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-
-        console.log('Token verification response:', response.data);
-        
-        if (response.data.success) {
-          const userData = response.data.data.student || response.data.data.teacher;
+        if (response.success) {
+          const userData = response.data.student || response.data.teacher;
           setUser(userData);
           setUserType(storedUserType);
-          
-          // Update stored user data
           localStorage.setItem('user', JSON.stringify(userData));
-          
-          // Set default auth header after successful verification
-          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         } else {
-          throw new Error('Token verification failed');
+          throw new Error(response.message || 'Token verification failed');
         }
       } catch (error) {
-        console.error('Token verification failed:', error.response?.data || error.message);
-        // Clear invalid data
+        console.error('Token verification failed:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('userType');
         localStorage.removeItem('userId');
@@ -75,129 +53,52 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, userType) => {
     try {
-      // Remove any trailing /api from base URL
-      const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
-      const loginUrl = `${baseUrl}/api/${userType}/login`;
+      const response = await apiLogin(email, password, userType);
       
-      console.log('Login URL:', loginUrl);
-      console.log('Login payload:', { Email: email, Password: password });
-
-      const response = await axios.post(
-        loginUrl,
-        { Email: email, Password: password },
-        { 
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      console.log('Login response:', response.data);
-
-      if (response.data && response.data.data) {
-        const { user, token } = response.data.data;
+      if (response.success) {
+        const { user, token } = response.data;
         
-        if (!user || !token) {
-          console.error('Invalid response data:', response.data);
-          return { success: false, message: 'Invalid response from server' };
-        }
-
-        // Store in localStorage first
         localStorage.setItem('token', token);
         localStorage.setItem('userType', userType);
         localStorage.setItem('userId', user._id);
         localStorage.setItem('user', JSON.stringify(user));
 
-        // Set default auth header
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-        // Verify token immediately
         try {
-          const verifyUrl = `${baseUrl}/api/${userType}/verify-token`;
-          const verifyResponse = await axios.get(
-            verifyUrl,
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              }
-            }
-          );
-
-          if (verifyResponse.data.success) {
-            // Set auth state only after successful verification
+          const verifyResponse = await apiVerifyToken(userType);
+          
+          if (verifyResponse.success) {
             setUser(user);
             setUserType(userType);
-            
             return { 
               success: true, 
-              data: response.data.data,
+              data: response.data,
               message: 'Login successful'
             };
           } else {
-            throw new Error('Token verification failed');
+            throw new Error(verifyResponse.message || 'Token verification failed');
           }
         } catch (verifyError) {
           console.error('Token verification failed after login:', verifyError);
-          // Clear data if verification fails
           localStorage.removeItem('token');
           localStorage.removeItem('userType');
           localStorage.removeItem('userId');
           localStorage.removeItem('user');
           return { 
             success: false, 
-            message: 'Login successful but token verification failed'
+            message: verifyError.message || 'Login successful but token verification failed'
           };
         }
       }
       
       return { 
         success: false, 
-        message: 'Invalid response format from server'
+        message: response.message || 'Invalid response format from server'
       };
     } catch (error) {
-      console.error('Login error:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        url: error.config?.url
-      });
-
-      if (error.response) {
-        const { status, data } = error.response;
-        
-        switch (status) {
-          case 400:
-            return { 
-              success: false, 
-              message: data?.message || 'Invalid email or password'
-            };
-          case 401:
-            return { 
-              success: false, 
-              message: data?.message || 'Email not verified'
-            };
-          case 403:
-            return { 
-              success: false, 
-              message: data?.message || 'Incorrect password'
-            };
-          case 404:
-            return { 
-              success: false, 
-              message: 'Login endpoint not found. Please check server configuration.'
-            };
-          default:
-            return { 
-              success: false, 
-              message: data?.message || 'Login failed. Please try again.'
-            };
-        }
-      }
-
+      console.error('Login error:', error);
       return {
         success: false,
-        message: 'Unable to connect to the server. Please check your internet connection.'
+        message: error.response?.data?.message || 'Unable to connect to the server. Please check your internet connection.'
       };
     }
   };

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://medarbackend.vercel.app/api';
 
-const apiService = axios.create({
+const axiosInstance = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
   headers: {
@@ -11,7 +11,7 @@ const apiService = axios.create({
 });
 
 // Request interceptor
-apiService.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -25,7 +25,7 @@ apiService.interceptors.request.use(
 );
 
 // Response interceptor
-apiService.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
@@ -36,12 +36,11 @@ apiService.interceptors.response.use(
   }
 );
 
-// API methods
-export const apiService = {
+const apiService = {
   // Auth methods
   login: async (data) => {
     try {
-      const response = await apiService.post('/student/login', data);
+      const response = await axiosInstance.post('/student/login', data);
       return response.data;
     } catch (error) {
       console.error('Login error:', error);
@@ -51,7 +50,7 @@ export const apiService = {
 
   signup: async (data) => {
     try {
-      const response = await apiService.post('/student/signup', data);
+      const response = await axiosInstance.post('/student/signup', data);
       return response.data;
     } catch (error) {
       console.error('Signup error:', error);
@@ -61,7 +60,7 @@ export const apiService = {
 
   logout: async () => {
     try {
-      const response = await apiService.post('/student/logout');
+      const response = await axiosInstance.post('/student/logout');
       localStorage.removeItem('token');
       return response.data;
     } catch (error) {
@@ -73,7 +72,7 @@ export const apiService = {
   // Profile methods
   getProfile: async (id) => {
     try {
-      const response = await apiService.get(`/student/StudentDocument/${id}`);
+      const response = await axiosInstance.get(`/student/StudentDocument/${id}`);
       return response.data;
     } catch (error) {
       console.error('Get profile error:', error);
@@ -83,7 +82,7 @@ export const apiService = {
 
   updateProfile: async (data) => {
     try {
-      const response = await apiService.put('/student/profile/update', data, {
+      const response = await axiosInstance.put('/student/profile/update', data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -98,7 +97,7 @@ export const apiService = {
   // Generic methods
   get: async (url, config = {}) => {
     try {
-      const response = await apiService.get(url, config);
+      const response = await axiosInstance.get(url, config);
       return response.data;
     } catch (error) {
       console.error('GET request error:', error);
@@ -108,7 +107,7 @@ export const apiService = {
 
   post: async (url, data, config = {}) => {
     try {
-      const response = await apiService.post(url, data, config);
+      const response = await axiosInstance.post(url, data, config);
       return response.data;
     } catch (error) {
       console.error('POST request error:', error);
@@ -118,7 +117,7 @@ export const apiService = {
 
   put: async (url, data, config = {}) => {
     try {
-      const response = await apiService.put(url, data, config);
+      const response = await axiosInstance.put(url, data, config);
       return response.data;
     } catch (error) {
       console.error('PUT request error:', error);
@@ -128,7 +127,7 @@ export const apiService = {
 
   delete: async (url, config = {}) => {
     try {
-      const response = await apiService.delete(url, config);
+      const response = await axiosInstance.delete(url, config);
       return response.data;
     } catch (error) {
       console.error('DELETE request error:', error);

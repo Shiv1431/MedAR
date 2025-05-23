@@ -502,7 +502,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   }
 });
 
-export const getCourses = asyncHandler(async (req, res) => {
+const getCourses = asyncHandler(async (req, res) => {
     try {
         // For now, return some sample courses
         const courses = [
@@ -539,7 +539,7 @@ export const getCourses = asyncHandler(async (req, res) => {
     }
 });
 
-export const getClasses = asyncHandler(async (req, res) => {
+const getClasses = asyncHandler(async (req, res) => {
     try {
         // For now, return some sample classes
         const classes = [

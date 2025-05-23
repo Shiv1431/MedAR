@@ -67,8 +67,10 @@ export const AuthProvider = ({ children }) => {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+            'Accept': 'application/json',
+            'Origin': import.meta.env.VITE_APP_URL
+          },
+          timeout: 10000 // 10 second timeout
         }
       );
 
@@ -100,7 +102,8 @@ export const AuthProvider = ({ children }) => {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
-        headers: error.response?.headers
+        headers: error.response?.headers,
+        config: error.config
       });
 
       if (error.response) {
@@ -119,9 +122,23 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
+      if (error.code === 'ECONNABORTED') {
+        return {
+          success: false,
+          message: 'Request timed out. Please try again.'
+        };
+      }
+
+      if (!error.response) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please check your internet connection.'
+        };
+      }
+
       return {
         success: false,
-        message: 'Network error. Please check your connection and try again.'
+        message: 'An unexpected error occurred. Please try again.'
       };
     }
   };

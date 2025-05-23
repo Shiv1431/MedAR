@@ -107,7 +107,8 @@ export default function Login() {
       console.error('Error details:', {
         message: errorMessage,
         response: error.response?.data,
-        status: error.response?.status
+        status: error.response?.status,
+        config: error.config
       });
       setErrors(prev => ({
         ...prev,

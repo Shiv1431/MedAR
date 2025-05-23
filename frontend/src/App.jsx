@@ -1,32 +1,34 @@
-import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 
 // Layouts
-import StudentLayout from './Pages/Dashboard/StudentDashboard/StudentLayout';
-import TeacherLayout from './Pages/Dashboard/TeacherDashboard/TeacherLayout';
+const StudentLayout = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/StudentLayout'));
+const TeacherLayout = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/TeacherLayout'));
 
 // Pages
-const Login = lazy(() => import('./Pages/Login/Login'));
-const Signup = lazy(() => import('./Pages/Signup/Signup'));
-const Anatomy3D = lazy(() => import('./Pages/Anatomy/Anatomy3D'));
+const Login = React.lazy(() => import('./Pages/Login/Login'));
+const Signup = React.lazy(() => import('./Pages/Signup/Signup'));
+const Anatomy3D = React.lazy(() => import('./Pages/Anatomy/Anatomy3D'));
 
 // Dashboard Pages
-const StudentWelcome = lazy(() => import('./Pages/Dashboard/StudentDashboard/Welcome'));
-const TeacherWelcome = lazy(() => import('./Pages/Dashboard/TeacherDashboard/TeacherWelcome'));
-const Profile = lazy(() => import('./Pages/Dashboard/StudentDashboard/Profile'));
-const StudentCourses = lazy(() => import('./Pages/Dashboard/StudentDashboard/Courses'));
-const StudentClasses = lazy(() => import('./Pages/Dashboard/StudentDashboard/Classes'));
-const SearchTeacher = lazy(() => import('./Pages/Dashboard/StudentDashboard/SearchTeacher'));
-const TeacherProfile = lazy(() => import('./Pages/Dashboard/TeacherDashboard/Profile'));
-const TeacherCourses = lazy(() => import('./Pages/Dashboard/TeacherDashboard/Courses'));
-const TeacherStudents = lazy(() => import('./Pages/Dashboard/TeacherDashboard/Students'));
-const TeacherSchedule = lazy(() => import('./Pages/Dashboard/TeacherDashboard/Schedule'));
+const StudentWelcome = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/Welcome'));
+const TeacherWelcome = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/TeacherWelcome'));
+const Profile = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/Profile'));
+const StudentCourses = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/Courses'));
+const StudentClasses = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/Classes'));
+const SearchTeacher = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/SearchTeacher'));
+const TeacherProfile = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/Profile'));
+const TeacherCourses = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/Courses'));
+const TeacherStudents = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/Students'));
+const TeacherSchedule = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/Schedule'));
 
 // Components
-const Navbar = lazy(() => import('./Components/Navbar/Navbar'));
-const Footer = lazy(() => import('./Components/Footer/Footer'));
-const ProtectedRoute = lazy(() => import('./context/ProtectedRoute'));
+const Navbar = React.lazy(() => import('./Components/Navbar/Navbar'));
+const Footer = React.lazy(() => import('./Components/Footer/Footer'));
 
 // Loading component
 const Loading = () => (
@@ -35,7 +37,22 @@ const Loading = () => (
   </div>
 );
 
-function App() {
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+const AppContent = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -69,7 +86,7 @@ function App() {
             />
             
             {/* Protected Routes */}
-            <Route element={<ProtectedRoute />}>
+            <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
               <Route path="/anatomy" element={<Anatomy3D />} />
               
               {/* Student Dashboard Routes */}
@@ -101,6 +118,29 @@ function App() {
         <Footer />
       </div>
     </Suspense>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <div className="min-h-screen bg-gray-50">
+          <AppContent />
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+        </div>
+      </AuthProvider>
+    </Router>
   );
 }
 

@@ -53,27 +53,27 @@ const StudentLayout = () => {
 
   const navItems = [
     {
-      path: `/Student/Dashboard/${ID}/Welcome`,
+      path: `Welcome`,
       icon: <FaHome className="w-6 h-6" />,
       text: 'Dashboard'
     },
     {
-      path: `/Student/Dashboard/${ID}/AR-Anatomy`,
+      path: `AR-Anatomy`,
       icon: <FaVrCardboard className="w-6 h-6" />,
       text: '3D Anatomy'
     },
     {
-      path: `/Student/Dashboard/${ID}/Courses`,
+      path: `Courses`,
       icon: <FaBookMedical className="w-6 h-6" />,
       text: 'Medical Courses'
     },
     {
-      path: `/Student/Dashboard/${ID}/Classes`,
+      path: `Classes`,
       icon: <FaUserMd className="w-6 h-6" />,
       text: 'My Classes'
     },
     {
-      path: `/Student/Dashboard/${ID}/Search`,
+      path: `Search`,
       icon: <FaSearch className="w-6 h-6" />,
       text: 'Find Mentors'
     }
@@ -90,36 +90,20 @@ const StudentLayout = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg flex flex-col">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-blue-600">MedLearn VR</h2>
-          <p className="text-sm text-gray-600 mt-1">Medical Student Portal</p>
-        </div>
-        
+      <div className="w-64 bg-white shadow-lg">
         {/* Profile Section */}
-        <div className="px-4 py-3 border-t border-gray-200">
-          <Link
-            to={`/Student/Dashboard/${ID}/profile`}
-            className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-              {userData?.profilePicture ? (
-                <img 
-                  src={userData.profilePicture} 
-                  alt="Profile" 
-                  className="h-full w-full rounded-full object-cover"
-                />
-              ) : (
-                <FaUser className="text-blue-600" />
-              )}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-4">
+            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+              <FaUser className="h-6 w-6 text-blue-600" />
             </div>
-            <div className="text-left flex-1">
-              <p className="text-sm font-medium text-gray-900">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
                 {userData?.Firstname} {userData?.Lastname}
-              </p>
-              <p className="text-xs text-gray-500">Student</p>
+              </h2>
+              <p className="text-sm text-gray-500">Student</p>
             </div>
-          </Link>
+          </div>
         </div>
 
         {/* Navigation */}

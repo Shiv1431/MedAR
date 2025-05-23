@@ -136,7 +136,7 @@ const StudentDashboard = () => {
               Access your enrolled medical courses and learning materials
             </p>
             <button
-              onClick={() => navigate(`/Student/Dashboard/${ID}/Courses`)}
+              onClick={() => navigate(`Courses`)}
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
             >
               View Courses
@@ -159,7 +159,7 @@ const StudentDashboard = () => {
               Track your progress and achievements in medical education
             </p>
             <button
-              onClick={() => navigate(`/Student/Dashboard/${ID}/Progress`)}
+              onClick={() => navigate(`Classes`)}
               className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors"
             >
               View Progress

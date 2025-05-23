@@ -132,10 +132,10 @@ const router = createBrowserRouter(
       }>
         <Route index element={<Navigate to="Welcome" replace />} />
         <Route path="Welcome" element={<WelcomeMedical/>}/>
-        <Route path="Search" element={<SearchTeacher/>}/>
-        <Route path="Classes" element={<StudentClasses/>}/>
-        <Route path="Courses" element={<StudentCourses/>}/>
         <Route path="AR-Anatomy" element={<MedicalARViewer/>}/>
+        <Route path="Courses" element={<StudentCourses/>}/>
+        <Route path="Classes" element={<StudentClasses/>}/>
+        <Route path="Search" element={<SearchTeacher/>}/>
         <Route path="Profile" element={<Profile/>}/>
       </Route>
       

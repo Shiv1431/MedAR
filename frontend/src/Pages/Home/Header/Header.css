@@ -1,0 +1,52 @@
+.gapError{
+    height: 10vh;
+}
+.logo{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.logo img{
+    height: 50px;
+}
+.logo h3{
+    color: #fff;
+    font-family: 'Gill Sans MT', sans-serif;
+    text-decoration: none;
+}
+.link-nav ul{
+    list-style: none;
+    color: #fff;
+    display: flex;
+    gap: 2rem;
+    font-size: 22px;
+    font-family: "Kanit", serif;
+    font-weight: 600;
+    margin-right: 200px;
+
+}
+
+
+
+
+button{
+    background-color: #ffe433;
+    border: none;
+    height: 40px;
+    width: 90px;
+    border-radius: 5px;
+    color: #0b0b13;
+}
+
+.deactive{
+    color: #fff;
+    text-decoration: none;
+}
+.active{
+    color:#4979D1;
+    text-decoration: none;
+}
+.headers{
+    background:linear-gradient(45deg, #1b1b28ef, #111703);
+    box-shadow: 0 0 12px #0a391fe3;
+}

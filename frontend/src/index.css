@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+
+*{
+  margin: 0;
+  padding: 0;
+}
+body{
+  background:linear-gradient(90deg, #050c079a 8.26%, rgba(1, 5, 22, 0.612) 99.96%), url('edutechBG.jpg');
+background-size:cover;
+background-repeat: no-repeat; 
+  
+  
+}
+body::-webkit-scrollbar{
+  display: none;
+}

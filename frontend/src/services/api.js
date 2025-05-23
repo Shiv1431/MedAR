@@ -27,7 +27,7 @@ api.interceptors.request.use(
 
 // Response interceptor
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
@@ -45,20 +45,20 @@ export const login = async (email, password, userType) => {
       Email: email,
       Password: password
     });
-    console.log('Login response:', response);
+    console.log('Login response:', response.data);
     
-    if (response.success) {
+    if (response.data.success) {
       return {
         success: true,
         data: {
-          token: response.token,
-          user: response.user
+          token: response.data.data.token,
+          user: response.data.data.user
         }
       };
     } else {
       return {
         success: false,
-        message: response.message || 'Login failed'
+        message: response.data.message || 'Login failed'
       };
     }
   } catch (error) {

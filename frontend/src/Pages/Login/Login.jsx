@@ -83,6 +83,7 @@ export default function Login() {
         
         console.log('Redirecting to:', redirectPath);
         navigate(redirectPath);
+        toast.success('Login successful!');
       } else {
         const errorMessage = result.message || "Login failed. Please try again.";
         setErrors(prev => ({

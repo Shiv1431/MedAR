@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaPhone, FaCalendarAlt, FaMapMarkerAlt, FaEdit, FaSave, FaTimes, FaCamera } from 'react-icons/fa';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Profile = () => {
   const { ID } = useParams();
@@ -252,6 +253,7 @@ const Profile = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="mb-4">
         <Link 
           to={`/Student/Dashboard/${ID}/Welcome`}

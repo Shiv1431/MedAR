@@ -1,18 +1,17 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://medarbackend.vercel.app/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://medarbackend.vercel.app/api';
 
-// Create axios instance with default config
-const api = axios.create({
-  baseURL: API_BASE_URL,
+const apiService = axios.create({
+  baseURL: BASE_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add request interceptor to add auth token
-api.interceptors.request.use(
+// Request interceptor
+apiService.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -25,12 +24,11 @@ api.interceptors.request.use(
   }
 );
 
-// Add response interceptor to handle errors
-api.interceptors.response.use(
+// Response interceptor
+apiService.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized access
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
@@ -43,7 +41,7 @@ export const apiService = {
   // Auth methods
   login: async (data) => {
     try {
-      const response = await api.post('/student/login', data);
+      const response = await apiService.post('/student/login', data);
       return response.data;
     } catch (error) {
       console.error('Login error:', error);
@@ -53,7 +51,7 @@ export const apiService = {
 
   signup: async (data) => {
     try {
-      const response = await api.post('/student/signup', data);
+      const response = await apiService.post('/student/signup', data);
       return response.data;
     } catch (error) {
       console.error('Signup error:', error);
@@ -63,7 +61,7 @@ export const apiService = {
 
   logout: async () => {
     try {
-      const response = await api.post('/student/logout');
+      const response = await apiService.post('/student/logout');
       localStorage.removeItem('token');
       return response.data;
     } catch (error) {
@@ -75,7 +73,7 @@ export const apiService = {
   // Profile methods
   getProfile: async (id) => {
     try {
-      const response = await api.get(`/student/StudentDocument/${id}`);
+      const response = await apiService.get(`/student/StudentDocument/${id}`);
       return response.data;
     } catch (error) {
       console.error('Get profile error:', error);
@@ -85,7 +83,7 @@ export const apiService = {
 
   updateProfile: async (data) => {
     try {
-      const response = await api.put('/student/profile/update', data, {
+      const response = await apiService.put('/student/profile/update', data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -100,7 +98,7 @@ export const apiService = {
   // Generic methods
   get: async (url, config = {}) => {
     try {
-      const response = await api.get(url, config);
+      const response = await apiService.get(url, config);
       return response.data;
     } catch (error) {
       console.error('GET request error:', error);
@@ -110,7 +108,7 @@ export const apiService = {
 
   post: async (url, data, config = {}) => {
     try {
-      const response = await api.post(url, data, config);
+      const response = await apiService.post(url, data, config);
       return response.data;
     } catch (error) {
       console.error('POST request error:', error);
@@ -120,7 +118,7 @@ export const apiService = {
 
   put: async (url, data, config = {}) => {
     try {
-      const response = await api.put(url, data, config);
+      const response = await apiService.put(url, data, config);
       return response.data;
     } catch (error) {
       console.error('PUT request error:', error);
@@ -130,7 +128,7 @@ export const apiService = {
 
   delete: async (url, config = {}) => {
     try {
-      const response = await api.delete(url, config);
+      const response = await apiService.delete(url, config);
       return response.data;
     } catch (error) {
       console.error('DELETE request error:', error);

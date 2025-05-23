@@ -15,19 +15,26 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Verify token and get user data
-      verifyToken();
+      verifyToken(token);
     } else {
       setLoading(false);
     }
   }, []);
 
-  const verifyToken = async () => {
+  const verifyToken = async (token) => {
     try {
-      const response = await apiService.get('/student/verify-token');
-      setUser(response.data);
+      const response = await apiService.get('/student/verify-token', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.data.success) {
+        setUser(response.data.user);
+      } else {
+        localStorage.removeItem('token');
+      }
     } catch (error) {
-      console.error('Token verification error:', error);
+      console.error('Token verification failed:', error);
       localStorage.removeItem('token');
     } finally {
       setLoading(false);
@@ -37,14 +44,17 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const response = await apiService.login({ email, password });
-      
-      if (response.data) {
-        const { user, token } = response.data;
+      const response = await apiService.post('/student/login', {
+        email,
+        password,
+      });
+
+      if (response.data.success) {
+        const { token, user } = response.data;
         localStorage.setItem('token', token);
         setUser(user);
         toast.success('Login successful!');
-        navigate('/Student/Dashboard');
+        navigate('/student/dashboard');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -58,9 +68,12 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     try {
       setLoading(true);
-      const response = await apiService.signup(userData);
-      toast.success('Signup successful! Please verify your email.');
-      return response;
+      const response = await apiService.post('/student/signup', userData);
+      
+      if (response.data.success) {
+        toast.success('Signup successful! Please verify your email.');
+        navigate('/login');
+      }
     } catch (error) {
       console.error('Signup error:', error);
       toast.error(error.response?.data?.message || 'Signup failed. Please try again.');
@@ -72,14 +85,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await apiService.logout();
+      await apiService.post('/student/logout');
       localStorage.removeItem('token');
       setUser(null);
-      toast.success('Logged out successfully');
+      toast.success('Logged out successfully!');
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
-      toast.error('Error logging out');
+      toast.error('Logout failed. Please try again.');
     }
   };
 
@@ -89,14 +102,13 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
-    setUser
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

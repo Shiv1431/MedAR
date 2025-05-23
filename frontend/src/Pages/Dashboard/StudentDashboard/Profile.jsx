@@ -15,7 +15,15 @@ const Profile = () => {
     ProfileImage: '',
     Studentdetails: {
       Phone: '',
-      Address: ''
+      Address: '',
+      Highesteducation: 'Not provided',
+      SecondarySchool: 'Not provided',
+      HigherSchool: 'Not provided',
+      SecondaryMarks: 0,
+      HigherMarks: 0,
+      Aadhaar: 'Not provided',
+      Secondary: 'Not provided',
+      Higher: 'Not provided'
     }
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -85,7 +93,8 @@ const Profile = () => {
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
-        setError('Failed to load profile data');
+        setError(error.response?.data?.message || 'Failed to load profile data');
+        toast.error(error.response?.data?.message || 'Failed to load profile data');
       } finally {
         setIsLoading(false);
       }
@@ -203,8 +212,10 @@ const Profile = () => {
       console.error('Error updating profile:', error);
       if (error.response) {
         console.error('Error response:', error.response.data);
+        toast.error(error.response.data.message || 'Failed to update profile');
+      } else {
+        toast.error('Failed to update profile');
       }
-      toast.error(error.response?.data?.message || 'Failed to update profile');
     }
   };
 
@@ -269,17 +280,17 @@ const Profile = () => {
         {/* Profile Header */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
           <div className="flex items-center space-x-6">
-            <div className="relative">
-              <div className="h-24 w-24 rounded-full bg-white bg-opacity-20 flex items-center justify-center overflow-hidden">
+            <div className="relative group">
+              <div className="h-32 w-32 rounded-full bg-white bg-opacity-20 flex items-center justify-center overflow-hidden">
                 {previewUrl ? (
                   <img src={previewUrl} alt="Profile" className="h-full w-full object-cover" />
                 ) : (
-                  <FaUser className="text-4xl text-white" />
+                  <FaUser className="text-6xl text-white" />
                 )}
               </div>
               {isEditing && (
-                <label className="absolute bottom-0 right-0 bg-white rounded-full p-2 cursor-pointer shadow-lg">
-                  <FaCamera className="text-blue-600" />
+                <label className="absolute bottom-0 right-0 bg-white rounded-full p-3 cursor-pointer shadow-lg transform transition-transform hover:scale-110">
+                  <FaCamera className="text-blue-600 text-xl" />
                   <input
                     type="file"
                     className="hidden"
@@ -290,10 +301,10 @@ const Profile = () => {
               )}
             </div>
             <div>
-              <h1 className="text-2xl font-bold">
+              <h1 className="text-3xl font-bold">
                 {userData?.Firstname || 'First Name'} {userData?.Lastname || 'Last Name'}
               </h1>
-              <p className="text-blue-100">Student</p>
+              <p className="text-blue-100 text-lg">Student</p>
             </div>
           </div>
         </div>
@@ -313,7 +324,7 @@ const Profile = () => {
                   disabled={!isEditing}
                   className={`w-full px-4 py-2 rounded-lg border ${
                     formErrors.Firstname ? 'border-red-500' : 'border-gray-300'
-                  } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                  } focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors`}
                 />
                 {formErrors.Firstname && (
                   <p className="mt-1 text-sm text-red-600">{formErrors.Firstname}</p>
@@ -331,7 +342,7 @@ const Profile = () => {
                   disabled={!isEditing}
                   className={`w-full px-4 py-2 rounded-lg border ${
                     formErrors.Lastname ? 'border-red-500' : 'border-gray-300'
-                  } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                  } focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors`}
                 />
                 {formErrors.Lastname && (
                   <p className="mt-1 text-sm text-red-600">{formErrors.Lastname}</p>
@@ -349,7 +360,7 @@ const Profile = () => {
                   disabled={!isEditing}
                   className={`w-full px-4 py-2 rounded-lg border ${
                     formErrors.Email ? 'border-red-500' : 'border-gray-300'
-                  } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                  } focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors`}
                 />
                 {formErrors.Email && (
                   <p className="mt-1 text-sm text-red-600">{formErrors.Email}</p>
@@ -367,7 +378,7 @@ const Profile = () => {
                   disabled={!isEditing}
                   className={`w-full px-4 py-2 rounded-lg border ${
                     formErrors.Phone ? 'border-red-500' : 'border-gray-300'
-                  } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                  } focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors`}
                 />
                 {formErrors.Phone && (
                   <p className="mt-1 text-sm text-red-600">{formErrors.Phone}</p>
@@ -383,21 +394,55 @@ const Profile = () => {
                   onChange={handleInputChange}
                   disabled={!isEditing}
                   rows="3"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 />
+              </div>
+
+              {/* Additional Student Details */}
+              <div className="md:col-span-2">
+                <h3 className="text-lg font-semibold text-gray-700 mb-4">Education Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Highest Education</label>
+                    <input
+                      type="text"
+                      value={userData.Studentdetails.Highesteducation}
+                      disabled
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-gray-50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Secondary School</label>
+                    <input
+                      type="text"
+                      value={userData.Studentdetails.SecondarySchool}
+                      disabled
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-gray-50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Higher School</label>
+                    <input
+                      type="text"
+                      value={userData.Studentdetails.HigherSchool}
+                      disabled
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-gray-50"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end space-x-4 pt-4 border-t">
+            <div className="flex justify-end space-x-4 pt-6 border-t mt-6">
               {!isEditing ? (
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
                 >
-                  <FaEdit />
-                  <span>Edit Profile</span>
+                  <FaEdit className="text-lg" />
+                  <span className="font-medium">Edit Profile</span>
                 </button>
               ) : (
                 <>
@@ -408,17 +453,17 @@ const Profile = () => {
                       setSelectedFile(null);
                       setPreviewUrl(userData?.ProfileImage || '');
                     }}
-                    className="flex items-center space-x-2 bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                    className="flex items-center space-x-2 bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors shadow-md hover:shadow-lg"
                   >
-                    <FaTimes />
-                    <span>Cancel</span>
+                    <FaTimes className="text-lg" />
+                    <span className="font-medium">Cancel</span>
                   </button>
                   <button
                     type="submit"
-                    className="flex items-center space-x-2 bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                    className="flex items-center space-x-2 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors shadow-md hover:shadow-lg"
                   >
-                    <FaSave />
-                    <span>Save Changes</span>
+                    <FaSave className="text-lg" />
+                    <span className="font-medium">Save Changes</span>
                   </button>
                 </>
               )}

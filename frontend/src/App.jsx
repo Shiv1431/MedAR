@@ -26,7 +26,7 @@ const TeacherSchedule = lazy(() => import('./Pages/Dashboard/TeacherDashboard/Sc
 // Components
 const Navbar = lazy(() => import('./Components/Navbar/Navbar'));
 const Footer = lazy(() => import('./Components/Footer/Footer'));
-const ProtectedRoute = lazy(() => import('./Components/ProtectedRoute'));
+const ProtectedRoute = lazy(() => import('./context/ProtectedRoute'));
 
 // Loading component
 const Loading = () => (

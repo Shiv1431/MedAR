@@ -2,8 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FaEnvelope, FaArrowLeft } from 'react-icons/fa';
 import { NavLink } from "react-router-dom";
-import Navbar from '../../../components/Navbar/Navbar';
-import Footer from '../../../components/Footer/Footer';
+import Navbar from '../../../Components/Navbar/Navbar';
+import Footer from '../../../Components/Footer/Footer';
 
 function VarifyEmail() {
   return (

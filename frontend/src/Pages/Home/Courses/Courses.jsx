@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaAtom, FaFlask, FaDna, FaCalculator, FaLaptopCode } from 'react-icons/fa';
-import Navbar from '../../../components/Navbar/Navbar';
-import Footer from '../../../components/Footer/Footer';
+import Navbar from '../../../Components/Navbar/Navbar';
+import Footer from '../../../Components/Footer/Footer';
 
 function Courses() {
   const [facList, setFacList] = useState([]);

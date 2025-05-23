@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { student } from "../models/student.model.js";
-import { StudentDocs } from "../models/studentdocs.model.js";
+import { studentdocs } from "../models/studentdocs.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import nodemailer from "nodemailer";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
@@ -496,6 +496,7 @@ const updateProfile = asyncHandler(async (req, res) => {
       }, "Profile updated successfully")
     );
   } catch (error) {
+    console.error('Error in updateProfile:', error);
     throw new ApiError(500, error.message || "Error updating profile");
   }
 });

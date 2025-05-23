@@ -295,38 +295,6 @@ const Profile = () => {
               </h1>
               <p className="text-blue-100">Student</p>
             </div>
-            <div className="ml-auto">
-              {!isEditing ? (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="flex items-center space-x-2 bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  <FaEdit />
-                  <span>Edit Profile</span>
-                </button>
-              ) : (
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handleSubmit}
-                    className="flex items-center space-x-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
-                  >
-                    <FaSave />
-                    <span>Save</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditing(false);
-                      setSelectedFile(null);
-                      setPreviewUrl(userData?.ProfileImage || '');
-                    }}
-                    className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-                  >
-                    <FaTimes />
-                    <span>Cancel</span>
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
 
@@ -418,6 +386,42 @@ const Profile = () => {
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-4 pt-4 border-t">
+              {!isEditing ? (
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <FaEdit />
+                  <span>Edit Profile</span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setSelectedFile(null);
+                      setPreviewUrl(userData?.ProfileImage || '');
+                    }}
+                    className="flex items-center space-x-2 bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    <FaTimes />
+                    <span>Cancel</span>
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex items-center space-x-2 bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                  >
+                    <FaSave />
+                    <span>Save Changes</span>
+                  </button>
+                </>
+              )}
             </div>
           </form>
         </div>

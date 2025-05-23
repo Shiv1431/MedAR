@@ -42,9 +42,15 @@ const StudentLayout = () => {
         // Set up axios default header
         axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
 
+        // Remove any trailing /api from base URL
+        const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
+        const studentUrl = `${baseUrl}/api/student/${ID}`;
+
+        console.log('Fetching student data from:', studentUrl);
+
         // Fetch student data
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/student/${ID}`,
+          studentUrl,
           {
             headers: {
               'Content-Type': 'application/json'

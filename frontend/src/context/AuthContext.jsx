@@ -24,9 +24,14 @@ export const AuthProvider = ({ children }) => {
           return;
         }
 
-        console.log('Verifying token for:', storedUserType);
+        // Remove any trailing /api from base URL
+        const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
+        const verifyUrl = `${baseUrl}/api/${storedUserType}/verify-token`;
+
+        console.log('Verifying token at:', verifyUrl);
+        
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/${storedUserType}/verify-token`,
+          verifyUrl,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -45,6 +50,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem('token');
           localStorage.removeItem('userType');
           localStorage.removeItem('userId');
+          localStorage.removeItem('user');
           setUser(null);
           setUserType(null);
         }
@@ -54,6 +60,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('token');
         localStorage.removeItem('userType');
         localStorage.removeItem('userId');
+        localStorage.removeItem('user');
         setUser(null);
         setUserType(null);
       } finally {
@@ -66,7 +73,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, userType) => {
     try {
-      // Remove any trailing /api from base URL to prevent double /api
+      // Remove any trailing /api from base URL
       const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
       const loginUrl = `${baseUrl}/api/${userType}/login`;
       
@@ -189,13 +196,17 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async (userType) => {
     try {
+      // Remove any trailing /api from base URL
+      const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
+      const logoutUrl = `${baseUrl}/api/${userType}/logout`;
+
       await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/logout`,
+        logoutUrl,
         {},
         {
           headers: { 
             Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Accept': 'application/json'
+            'Content-Type': 'application/json'
           },
           withCredentials: true
         }
@@ -208,6 +219,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       localStorage.removeItem('userType');
       localStorage.removeItem('userId');
+      localStorage.removeItem('user');
     }
   };
 

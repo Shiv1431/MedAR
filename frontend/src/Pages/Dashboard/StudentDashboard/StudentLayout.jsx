@@ -9,18 +9,22 @@ const StudentLayout = () => {
   const { user, userType, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user || !userType) {
-        console.log('No user or userType found, redirecting to login');
-        navigate('/login');
-      } else if (userType !== 'student') {
-        console.log('User is not a student, redirecting to login');
-        navigate('/login');
-      } else if (user._id !== ID) {
-        console.log('User ID mismatch, redirecting to correct dashboard');
-        navigate(`/Student/Dashboard/${user._id}`);
+    const checkAuth = async () => {
+      if (!loading) {
+        if (!user || !userType) {
+          console.log('No user or userType found, redirecting to login');
+          navigate('/login');
+        } else if (userType !== 'student') {
+          console.log('User is not a student, redirecting to login');
+          navigate('/login');
+        } else if (user._id !== ID) {
+          console.log('User ID mismatch, redirecting to correct dashboard');
+          navigate(`/Student/Dashboard/${user._id}/Welcome`);
+        }
       }
-    }
+    };
+
+    checkAuth();
   }, [user, userType, loading, ID, navigate]);
 
   if (loading) {

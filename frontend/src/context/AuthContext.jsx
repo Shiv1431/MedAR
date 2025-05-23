@@ -66,20 +66,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, userType) => {
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
-      const apiUrl = `${baseUrl}/api/${userType}/login`;
-      console.log('Making login request to:', apiUrl);
-      console.log('Request payload:', { Email: email, Password: password });
-      
       const response = await axios.post(
-        apiUrl,
+        `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/login`,
         { Email: email, Password: password },
         { 
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Origin': import.meta.env.VITE_APP_URL
+            'Content-Type': 'application/json'
           },
           timeout: 10000 // 10 second timeout
         }
@@ -112,9 +105,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Login error details:', {
         message: error.message,
         response: error.response?.data,
-        status: error.response?.status,
-        headers: error.response?.headers,
-        config: error.config
+        status: error.response?.status
       });
 
       if (error.response) {
@@ -133,23 +124,9 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-      if (error.code === 'ECONNABORTED') {
-        return {
-          success: false,
-          message: 'Request timed out. Please try again.'
-        };
-      }
-
-      if (!error.response) {
-        return {
-          success: false,
-          message: 'Unable to connect to the server. Please check your internet connection.'
-        };
-      }
-
       return {
         success: false,
-        message: 'An unexpected error occurred. Please try again.'
+        message: 'Unable to connect to the server. Please check your internet connection.'
       };
     }
   };

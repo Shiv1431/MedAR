@@ -134,8 +134,7 @@ const mailVerified = asyncHandler(async (req, res) => {
 });
 
 const login = asyncHandler(async (req, res) => {
-  const Email = req.user.Email;
-  const Password = req.user.Password;
+  const { Email, Password } = req.body;
 
   if ([Email, Password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");

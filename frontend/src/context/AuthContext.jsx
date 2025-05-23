@@ -55,7 +55,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, userType) => {
     try {
-      const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/login`;
+      const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
+      const apiUrl = `${baseUrl}/api/${userType}/login`;
       console.log('Making login request to:', apiUrl);
       console.log('Request payload:', { Email: email, Password: password });
       

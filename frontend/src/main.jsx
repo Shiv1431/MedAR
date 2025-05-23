@@ -14,7 +14,7 @@ import MedicalCourses from './Pages/MedicalCourses/MedicalCourses'
 // import UploadImage from './Pages/Dashboard/StudentDashboard/UploadImage'
 // import ARViewer from './Pages/Dashboard/StudentDashboard/ARViewer'
 
-import { RouterProvider, Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom'
+import { RouterProvider, Route, createBrowserRouter, createRoutesFromElements, Navigate } from 'react-router-dom'
 import Layout from './Layout'
 import StudentDocument from './Pages/Components/DocumentVerification/StudentDocument'
 import TeacherDocument from './Pages/Components/DocumentVerification/TeacherDocument'
@@ -43,6 +43,7 @@ import MedicalARViewer from './Pages/Dashboard/StudentDashboard/MedicalARViewer'
 import UserDashboard from './Pages/UserDashboard/UserDashboard'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './context/ProtectedRoute'
+import Profile from './Pages/Components/Profile/Profile'
 
 
 const router = createBrowserRouter(
@@ -129,18 +130,13 @@ const router = createBrowserRouter(
           <StudentLayout/>
         </ProtectedRoute>
       }>
-        <Route path='/Student/Dashboard/:ID/Welcome' element={<WelcomeMedical/>}/>
-        <Route path='/Student/Dashboard/:ID/Search' element={<SearchTeacher/>}/>
-        <Route path='/Student/Dashboard/:ID/Classes' element={<StudentClasses/>}/>
-        <Route path='/Student/Dashboard/:ID/Courses' element={<StudentCourses/>}/>
-        <Route path='/Student/Dashboard/:ID/AR-Anatomy' element={<MedicalARViewer/>}/>
-        {/* <Route path="/upload" element={ <UploadImage />}/>
-            <Route
-              path="/ar/:imageId"
-              element={
-                  <ARViewer />
-              }
-            />  */}
+        <Route index element={<Navigate to="Welcome" replace />} />
+        <Route path="Welcome" element={<WelcomeMedical/>}/>
+        <Route path="Search" element={<SearchTeacher/>}/>
+        <Route path="Classes" element={<StudentClasses/>}/>
+        <Route path="Courses" element={<StudentCourses/>}/>
+        <Route path="AR-Anatomy" element={<MedicalARViewer/>}/>
+        <Route path="Profile" element={<Profile/>}/>
       </Route>
       
       {/* Teacher Dashboard Routes */}

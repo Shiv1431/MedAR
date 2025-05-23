@@ -22,6 +22,7 @@ const Profile = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [formErrors, setFormErrors] = useState({});
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -33,13 +34,16 @@ const Profile = () => {
         }
         
         console.log('Fetching profile for ID:', ID);
-        const response = await axios.get(`http://localhost:8000/api/student/StudentDocument/${ID}`, {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          withCredentials: true
-        });
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/student/StudentDocument/${ID}`,
+          {
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            withCredentials: true
+          }
+        );
         
         console.log('Profile response:', response.data);
         
@@ -80,16 +84,7 @@ const Profile = () => {
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
-        if (error.response) {
-          console.error('Error response:', error.response.data);
-        }
-        if (error.response && error.response.status === 401) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          navigate('/login');
-        } else {
-          toast.error('Failed to load profile. Please try again.');
-        }
+        setError('Failed to load profile data');
       } finally {
         setIsLoading(false);
       }
@@ -165,7 +160,7 @@ const Profile = () => {
       });
 
       const response = await axios.put(
-        `http://localhost:8000/api/student/profile/update`,
+        `${import.meta.env.VITE_API_BASE_URL}/student/profile/update`,
         formData,
         {
           headers: {

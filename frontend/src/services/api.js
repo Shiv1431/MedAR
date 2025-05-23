@@ -30,7 +30,7 @@ const getHeaders = () => {
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
   };
 
   // Debug logging
@@ -137,7 +137,6 @@ const api = {
         method: 'DELETE',
         credentials: 'include',
         headers: getHeaders(),
-        body: JSON.stringify({}),
         mode: 'cors',
         cache: 'no-cache',
       });

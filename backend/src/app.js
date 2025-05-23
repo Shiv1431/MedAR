@@ -15,14 +15,26 @@ import {
 
 const app = express();
 
+// CORS configuration
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Allow frontend origin
-    credentials: true, // Allow cookies & authentication headers
-    methods: ["GET", "POST", "PUT", "DELETE"], // Allow necessary HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+      "Access-Control-Allow-Origin",
+      "Access-Control-Allow-Credentials"
+    ],
+    exposedHeaders: ["Set-Cookie"],
+    maxAge: 86400 // 24 hours
   })
 );
+
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
@@ -36,15 +48,21 @@ export const instance = new Razorpay({
 // Access environment variables
 const MODEL_NAME = "gemini-pro";
 const API_KEY = process.env.GEMINI_API_KEY;
-// Middleware to handle HTTP post requests
-app.use(bodyParser.json()); // To handle JSON body
 
+// Middleware to handle HTTP post requests
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 app.use(
   session({
     secret: "This is the secret key",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
   })
 );
 

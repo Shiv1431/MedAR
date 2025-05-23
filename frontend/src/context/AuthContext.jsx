@@ -17,12 +17,16 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem('token');
         const storedUserType = localStorage.getItem('userType');
+        const storedUser = localStorage.getItem('user');
         
-        if (!token || !storedUserType) {
-          console.log('No token or user type found');
+        if (!token || !storedUserType || !storedUser) {
+          console.log('Missing authentication data');
           setLoading(false);
           return;
         }
+
+        // Set default auth header
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
         // Remove any trailing /api from base URL
         const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
@@ -34,7 +38,6 @@ export const AuthProvider = ({ children }) => {
           verifyUrl,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json'
             },
             withCredentials: true
@@ -42,17 +45,16 @@ export const AuthProvider = ({ children }) => {
         );
 
         console.log('Token verification response:', response.data);
+        
         if (response.data.success) {
-          setUser(response.data.data.student);
+          const userData = response.data.data.student || response.data.data.teacher;
+          setUser(userData);
           setUserType(storedUserType);
+          
+          // Update stored user data
+          localStorage.setItem('user', JSON.stringify(userData));
         } else {
-          // Clear invalid data
-          localStorage.removeItem('token');
-          localStorage.removeItem('userType');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('user');
-          setUser(null);
-          setUserType(null);
+          throw new Error('Token verification failed');
         }
       } catch (error) {
         console.error('Token verification failed:', error.response?.data || error.message);

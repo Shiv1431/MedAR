@@ -60,10 +60,13 @@ const StudentLayout = () => {
         );
 
         if (response.data.success) {
-          setStudentData(response.data.data.student);
+          const student = response.data.data.student;
+          setStudentData(student);
+          
+          // Update stored user data
+          localStorage.setItem('user', JSON.stringify(student));
         } else {
-          console.error('Failed to fetch student data:', response.data.message);
-          toast.error('Failed to load student data');
+          throw new Error(response.data.message || 'Failed to fetch student data');
         }
       } catch (error) {
         console.error('Error initializing layout:', error);

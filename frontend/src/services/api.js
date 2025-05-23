@@ -41,9 +41,8 @@ export const login = async (credentials) => {
   try {
     // Format the request data according to backend expectations
     const requestData = {
-      email: credentials.email,
-      password: credentials.password,
-      userType: credentials.userType // Changed from role to userType to match backend
+      Email: credentials.email,
+      Password: credentials.password,
     };
 
     console.log('Login request data:', requestData); // Debug log

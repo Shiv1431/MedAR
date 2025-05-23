@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
       const response = await apiLogin({ email, password, userType });
 
       if (response.success) {
-        const { token, user } = response;
+        const { token, user } = response.data;
         localStorage.setItem('token', token);
         setUser(user);
         toast.success('Login successful!');

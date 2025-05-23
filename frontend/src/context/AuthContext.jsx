@@ -87,6 +87,9 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         localStorage.setItem('userType', userType);
         localStorage.setItem('userId', user._id);
+
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
         return { success: true, data: response.data.data };
       } else {
         console.error('Unexpected response structure:', response.data);
@@ -101,18 +104,24 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (error.response) {
-        if (error.response.status === 400) {
-          return { success: false, message: 'Invalid email or password' };
-        } else if (error.response.status === 401) {
-          return { success: false, message: 'Email not verified' };
-        } else if (error.response.status === 403) {
-          return { success: false, message: 'Incorrect password' };
+        switch (error.response.status) {
+          case 400:
+            return { success: false, message: 'Invalid email or password' };
+          case 401:
+            return { success: false, message: 'Email not verified' };
+          case 403:
+            return { success: false, message: 'Incorrect password' };
+          default:
+            return { 
+              success: false, 
+              message: error.response.data?.message || 'Login failed. Please try again.'
+            };
         }
       }
 
       return {
         success: false,
-        message: error.response?.data?.message || 'Login failed. Please try again.'
+        message: 'Network error. Please check your connection and try again.'
       };
     }
   };

@@ -134,63 +134,71 @@ const mailVerified = asyncHandler(async (req, res) => {
 });
 
 const login = asyncHandler(async (req, res) => {
-  const { Email, Password } = req.body;
+  try {
+    const { Email, Password } = req.body;
+    console.log('Login attempt for:', Email);
 
-  if ([Email, Password].some((field) => field?.trim() === "")) {
-    throw new ApiError(400, "All fields are required");
+    if ([Email, Password].some((field) => field?.trim() === "")) {
+      throw new ApiError(400, "All fields are required");
+    }
+
+    const StdLogin = await student.findOne({ Email });
+    console.log('Student found:', !!StdLogin);
+
+    if (!StdLogin) {
+      throw new ApiError(400, "Student does not exist");
+    }
+
+    if (!StdLogin.Isverified) {
+      throw new ApiError(401, "Email is not verified");
+    }
+
+    const StdPassCheck = await StdLogin.isPasswordCorrect(Password);
+    console.log('Password check result:', StdPassCheck);
+
+    if (!StdPassCheck) {
+      throw new ApiError(403, "Password is incorrect");
+    }
+
+    const tempStd = StdLogin._id;
+    console.log('Generating tokens for student:', tempStd);
+
+    const { Accesstoken, Refreshtoken } = await generateAccessAndRefreshTokens(tempStd);
+
+    const loggedInStd = await student
+      .findById(tempStd)
+      .select("-Password -Refreshtoken");
+
+    const options = {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none'
+    };
+
+    // Prepare response data with user and tokens
+    const responseData = {
+      user: loggedInStd,
+      token: Accesstoken,
+      refreshToken: Refreshtoken
+    };
+
+    console.log('Login successful for:', Email);
+
+    return res
+      .status(200)
+      .cookie("Accesstoken", Accesstoken, options)
+      .cookie("Refreshtoken", Refreshtoken, options)
+      .json(
+        new ApiResponse(
+          200,
+          responseData,
+          "Logged in successfully"
+        )
+      );
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
   }
-
-  const StdLogin = await student.findOne({
-    Email,
-  });
-
-  if (!StdLogin) {
-    throw new ApiError(400, "Student does not exist");
-  }
-
-  if (!StdLogin.Isverified) {
-    throw new ApiError(401, "Email is not verified");
-  }
-
-  const StdPassCheck = await StdLogin.isPasswordCorrect(Password);
-
-  if (!StdPassCheck) {
-    throw new ApiError(403, "Password is incorrect");
-  }
-
-  const tempStd = StdLogin._id;
-
-  const { Accesstoken, Refreshtoken } = await generateAccessAndRefreshTokens(
-    tempStd
-  );
-
-  const loggedInStd = await student
-    .findById(tempStd)
-    .select("-Password -Refreshtoken");
-
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-
-  // Prepare response data with user and tokens
-  const responseData = {
-    user: loggedInStd,
-    token: Accesstoken, // Include access token in response body
-    refreshToken: Refreshtoken // Include refresh token in response body
-  };
-
-  return res
-    .status(200)
-    .cookie("Accesstoken", Accesstoken, options)
-    .cookie("Refreshtoken", Refreshtoken, options)
-    .json(
-      new ApiResponse(
-        200,
-        responseData,
-        "Logged in successfully"
-      )
-    );
 });
 
 const logout = asyncHandler(async (req, res) => {

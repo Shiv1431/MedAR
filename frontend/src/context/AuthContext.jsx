@@ -79,9 +79,12 @@ export function AuthProvider({ children }) {
 
       // Format the request data to match backend expectations
       const requestData = {
-        email: email.trim(),
-        password: password.trim()
+        Email: email.trim(),
+        Password: password.trim()
       }
+
+      // Log request data for debugging
+      console.log('Login request data:', requestData)
 
       // Make API request
       const response = await api.post(`/${userType}/login`, requestData)
@@ -138,6 +141,10 @@ export function AuthProvider({ children }) {
       } else if (error.status === 401) {
         throw new Error("Invalid credentials")
       } else if (error.status === 422) {
+        // Handle validation errors
+        if (error.data && error.data.message) {
+          throw new Error(error.data.message)
+        }
         throw new Error("Please check your input")
       }
       throw new Error(error.message || "Login failed")
@@ -146,7 +153,15 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     try {
-      const response = await api.post("/register", userData)
+      // Transform userData to match backend expectations
+      const transformedData = {
+        Email: userData.email,
+        Password: userData.password,
+        Name: userData.name,
+        // Add any other required fields
+      }
+
+      const response = await api.post("/register", transformedData)
       if (!response || !response.success) {
         throw new Error(response?.message || "Registration failed")
       }
@@ -164,6 +179,9 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("Registration error:", error)
       if (error.status === 422) {
+        if (error.data && error.data.message) {
+          throw new Error(error.data.message)
+        }
         throw new Error("Please check your input")
       }
       throw new Error(error.message || "Registration failed")

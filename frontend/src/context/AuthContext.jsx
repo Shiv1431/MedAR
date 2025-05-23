@@ -25,9 +25,6 @@ export const AuthProvider = ({ children }) => {
           return;
         }
 
-        // Set default auth header
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
         // Remove any trailing /api from base URL
         const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
         const verifyUrl = `${baseUrl}/api/${storedUserType}/verify-token`;
@@ -38,6 +35,7 @@ export const AuthProvider = ({ children }) => {
           verifyUrl,
           {
             headers: {
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             },
             withCredentials: true
@@ -53,6 +51,9 @@ export const AuthProvider = ({ children }) => {
           
           // Update stored user data
           localStorage.setItem('user', JSON.stringify(userData));
+          
+          // Set default auth header after successful verification
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         } else {
           throw new Error('Token verification failed');
         }
@@ -103,11 +104,7 @@ export const AuthProvider = ({ children }) => {
           return { success: false, message: 'Invalid response from server' };
         }
 
-        // Set auth state
-        setUser(user);
-        setUserType(userType);
-        
-        // Store in localStorage
+        // Store in localStorage first
         localStorage.setItem('token', token);
         localStorage.setItem('userType', userType);
         localStorage.setItem('userId', user._id);
@@ -115,12 +112,46 @@ export const AuthProvider = ({ children }) => {
 
         // Set default auth header
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
-        return { 
-          success: true, 
-          data: response.data.data,
-          message: 'Login successful'
-        };
+
+        // Verify token immediately
+        try {
+          const verifyUrl = `${baseUrl}/api/${userType}/verify-token`;
+          const verifyResponse = await axios.get(
+            verifyUrl,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              withCredentials: true
+            }
+          );
+
+          if (verifyResponse.data.success) {
+            // Set auth state only after successful verification
+            setUser(user);
+            setUserType(userType);
+            
+            return { 
+              success: true, 
+              data: response.data.data,
+              message: 'Login successful'
+            };
+          } else {
+            throw new Error('Token verification failed');
+          }
+        } catch (verifyError) {
+          console.error('Token verification failed after login:', verifyError);
+          // Clear data if verification fails
+          localStorage.removeItem('token');
+          localStorage.removeItem('userType');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('user');
+          return { 
+            success: false, 
+            message: 'Login successful but token verification failed'
+          };
+        }
       }
       
       return { 

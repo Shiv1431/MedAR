@@ -1,155 +1,143 @@
-import env from '../config/env';
+import axios from 'axios';
 
-const API_URL = env.API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://medarbackend.vercel.app/api';
 
-// Debug logging
-if (import.meta.env.DEV) {
-  console.log('API URL:', API_URL);
-}
-
-const handleResponse = async (response) => {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw {
-      status: response.status,
-      message: error.message || 'Something went wrong',
-      data: error
-    };
-  }
-  const data = await response.json();
-  // Transform the response to match the expected format
-  return {
-    success: true,
-    data: data.data || data,
-    message: data.message
-  };
-};
-
-const getHeaders = () => {
-  const token = localStorage.getItem('token');
-  const headers = {
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-  };
+  },
+});
 
-  // Debug logging
-  if (import.meta.env.DEV) {
-    console.log('Request headers:', headers);
+// Add request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
+);
 
-  return headers;
+// Add response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized access
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// API methods
+export const apiService = {
+  // Auth methods
+  login: async (data) => {
+    try {
+      const response = await api.post('/student/login', data);
+      return response.data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  },
+
+  signup: async (data) => {
+    try {
+      const response = await api.post('/student/signup', data);
+      return response.data;
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
+  },
+
+  logout: async () => {
+    try {
+      const response = await api.post('/student/logout');
+      localStorage.removeItem('token');
+      return response.data;
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
+  },
+
+  // Profile methods
+  getProfile: async (id) => {
+    try {
+      const response = await api.get(`/student/StudentDocument/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Get profile error:', error);
+      throw error;
+    }
+  },
+
+  updateProfile: async (data) => {
+    try {
+      const response = await api.put('/student/profile/update', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Update profile error:', error);
+      throw error;
+    }
+  },
+
+  // Generic methods
+  get: async (url, config = {}) => {
+    try {
+      const response = await api.get(url, config);
+      return response.data;
+    } catch (error) {
+      console.error('GET request error:', error);
+      throw error;
+    }
+  },
+
+  post: async (url, data, config = {}) => {
+    try {
+      const response = await api.post(url, data, config);
+      return response.data;
+    } catch (error) {
+      console.error('POST request error:', error);
+      throw error;
+    }
+  },
+
+  put: async (url, data, config = {}) => {
+    try {
+      const response = await api.put(url, data, config);
+      return response.data;
+    } catch (error) {
+      console.error('PUT request error:', error);
+      throw error;
+    }
+  },
+
+  delete: async (url, config = {}) => {
+    try {
+      const response = await api.delete(url, config);
+      return response.data;
+    } catch (error) {
+      console.error('DELETE request error:', error);
+      throw error;
+    }
+  },
 };
 
-const api = {
-  defaults: {
-    headers: {
-      common: {}
-    }
-  },
-
-  get: async (endpoint) => {
-    const url = `${API_URL}${endpoint}`;
-    if (import.meta.env.DEV) {
-      console.log('GET Request:', url);
-    }
-
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-        headers: getHeaders(),
-        mode: 'cors',
-        cache: 'no-cache',
-      });
-      return handleResponse(response);
-    } catch (error) {
-      if (env.ENABLE_LOGGING) {
-        console.error('API Error:', error);
-        console.error('Request URL:', url);
-      }
-      throw error;
-    }
-  },
-
-  post: async (endpoint, data) => {
-    const url = `${API_URL}${endpoint}`;
-    if (import.meta.env.DEV) {
-      console.log('POST Request:', url);
-      console.log('Request data:', data);
-    }
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        credentials: 'include',
-        headers: getHeaders(),
-        body: JSON.stringify(data),
-        mode: 'cors',
-        cache: 'no-cache',
-      });
-      return handleResponse(response);
-    } catch (error) {
-      if (env.ENABLE_LOGGING) {
-        console.error('API Error:', error);
-        console.error('Request URL:', url);
-        console.error('Request data:', data);
-      }
-      throw error;
-    }
-  },
-
-  put: async (endpoint, data) => {
-    const url = `${API_URL}${endpoint}`;
-    if (import.meta.env.DEV) {
-      console.log('PUT Request:', url);
-      console.log('Request data:', data);
-    }
-
-    try {
-      const response = await fetch(url, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: getHeaders(),
-        body: JSON.stringify(data),
-        mode: 'cors',
-        cache: 'no-cache',
-      });
-      return handleResponse(response);
-    } catch (error) {
-      if (env.ENABLE_LOGGING) {
-        console.error('API Error:', error);
-        console.error('Request URL:', url);
-        console.error('Request data:', data);
-      }
-      throw error;
-    }
-  },
-
-  delete: async (endpoint) => {
-    const url = `${API_URL}${endpoint}`;
-    if (import.meta.env.DEV) {
-      console.log('DELETE Request:', url);
-    }
-
-    try {
-      const response = await fetch(url, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: getHeaders(),
-        mode: 'cors',
-        cache: 'no-cache',
-      });
-      return handleResponse(response);
-    } catch (error) {
-      if (env.ENABLE_LOGGING) {
-        console.error('API Error:', error);
-        console.error('Request URL:', url);
-      }
-      throw error;
-    }
-  },
-};
-
-export default api;
+export default apiService;
 

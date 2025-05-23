@@ -31,6 +31,7 @@ const studentSchema = new mongoose.Schema({
     Password:{
         type:String,
         required: true,
+        minlength: 6,
     },
 
     Isverified: {
@@ -40,7 +41,7 @@ const studentSchema = new mongoose.Schema({
 
     Isapproved:{
         type: String,
-        enum: ['approved', 'rejected', 'pending', 'reupload'],
+        enum: ['pending', 'approved', 'rejected'],
         default: 'pending',
     },
 
@@ -98,7 +99,9 @@ studentSchema.methods.isPasswordCorrect = async function (Password){
 studentSchema.methods.generateAccessToken = function(){
     return jwt.sign({
         _id:this._id,
-        Email:this.Email,
+        email:this.Email,
+        firstname:this.Firstname,
+        lastname:this.Lastname,
     },
     process.env.ACCESS_TOKEN_SECRET,{
         expiresIn:process.env.ACCESS_TOKEN_EXPIRY
@@ -108,23 +111,23 @@ studentSchema.methods.generateAccessToken = function(){
 studentSchema.methods.generateRefreshToken = function(){
     return jwt.sign({
         _id:this._id,
-        Email:this.Email,
     },
     process.env.REFRESH_TOKEN_SECRET,{
         expiresIn:process.env.REFRESH_TOKEN_EXPIRY
     })
 }
 
-studentSchema.methods.generateResetToken =async function(){
+studentSchema.methods.generateResetToken = function(){
+    const resetToken = crypto.randomBytes(32).toString("hex");
 
-    const reset=crypto.randomBytes(20).toString('hex') ;
+    this.forgetPasswordToken = crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
 
-    this.forgetPasswordToken=crypto.createHash('sha256').update(reset).digest('hex') ;
+    this.forgetPasswordExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-    this.forgetPasswordExpiry=Date.now() + 15 * 60 * 1000 ; 
-
-    await this.save() ;
-
+    return resetToken;
 }
 
 

@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { student } from "../models/student.model.js";
-import { studentdocs } from "../models/studentdocs.model.js";
+import { StudentDocs } from "../models/studentdocs.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import nodemailer from "nodemailer";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
@@ -297,16 +297,14 @@ const addStudentDetails = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  const alreadyExist = await studentdocs.findOne({ Phone });
+  const alreadyExist = await StudentDocs.findOne({ Phone });
 
   if (alreadyExist) {
     throw new ApiError(400, "phone number already exists");
   }
 
   const AadhaarLocalPath = req.files?.Aadhaar?.[0]?.path;
-
   const SecondaryLocalPath = req.files?.Secondary?.[0]?.path;
-
   const HigherLocalPath = req.files?.Higher?.[0]?.path;
 
   if (!AadhaarLocalPath) {
@@ -323,10 +321,9 @@ const addStudentDetails = asyncHandler(async (req, res) => {
 
   const Aadhaar = await uploadOnCloudinary(AadhaarLocalPath);
   const Secondary = await uploadOnCloudinary(SecondaryLocalPath);
-
   const Higher = await uploadOnCloudinary(HigherLocalPath);
 
-  const studentdetails = await studentdocs.create({
+  const studentdetails = await StudentDocs.create({
     Phone,
     Address,
     Highesteducation,
@@ -339,8 +336,6 @@ const addStudentDetails = asyncHandler(async (req, res) => {
     Higher: Higher.url,
   });
 
-  //const loggedstd = await student.findByIdAndUpdate(id, {})
-
   const theStudent = await student
     .findOneAndUpdate(
       { _id: id },
@@ -350,7 +345,7 @@ const addStudentDetails = asyncHandler(async (req, res) => {
     .select("-Password -Refreshtoken");
 
   if (!theStudent) {
-    throw new ApiError(400, "faild to approve or reject || student not found");
+    throw new ApiError(400, "failed to approve or reject || student not found");
   }
 
   return res
@@ -459,12 +454,11 @@ const updateProfile = asyncHandler(async (req, res) => {
     }
 
     // Update or create student details
-    let studentDetails = await studentdocs.findById(studentData.Studentdetails);
+    let studentDetails = await StudentDocs.findById(studentData.Studentdetails);
     if (!studentDetails) {
-      studentDetails = new studentdocs({
+      studentDetails = new StudentDocs({
         Phone: Phone || '',
         Address: Address || '',
-        // Set other required fields with default values
         Highesteducation: 'Not provided',
         SecondarySchool: 'Not provided',
         HigherSchool: 'Not provided',

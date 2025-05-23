@@ -24,9 +24,12 @@ export const AuthProvider = ({ children }) => {
 
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/verify-token`,
+          `${import.meta.env.VITE_API_BASE_URL}/${userType}/verify-token`,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Accept': 'application/json'
+            },
             withCredentials: true
           }
         );
@@ -52,16 +55,18 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, userType) => {
     try {
-      console.log('Making login request to:', `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/login`);
+      const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/${userType}/login`;
+      console.log('Making login request to:', apiUrl);
       console.log('Request payload:', { Email: email, Password: password });
       
       const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/login`,
+        apiUrl,
         { Email: email, Password: password },
         { 
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           }
         }
       );
@@ -69,11 +74,12 @@ export const AuthProvider = ({ children }) => {
       console.log('Login response:', response.data);
 
       if (response.data.success) {
-        setUser(response.data.data.user);
+        const { user, token } = response.data.data;
+        setUser(user);
         setUserType(userType);
-        localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('token', token);
         localStorage.setItem('userType', userType);
-        localStorage.setItem('userId', response.data.data.user._id);
+        localStorage.setItem('userId', user._id);
         return { success: true, data: response.data.data };
       } else {
         return { success: false, message: response.data.message };
@@ -117,10 +123,13 @@ export const AuthProvider = ({ children }) => {
   const logout = async (userType) => {
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/logout`,
+        `${import.meta.env.VITE_API_BASE_URL}/${userType}/logout`,
         {},
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          headers: { 
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Accept': 'application/json'
+          },
           withCredentials: true
         }
       );

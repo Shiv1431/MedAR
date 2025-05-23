@@ -72,24 +72,26 @@ export default function Login() {
       console.log('Login result:', result);
       
       if (result.success && result.data) {
-        // Store user type and token in localStorage
-        localStorage.setItem('userType', formData.userType);
-        localStorage.setItem('token', result.data.token);
-        localStorage.setItem('userId', result.data.user._id);
+        const { user, token } = result.data;
         
-        // Ensure we're using the correct user type for redirection
+        // Store user data
+        localStorage.setItem('userType', formData.userType);
+        localStorage.setItem('token', token);
+        localStorage.setItem('userId', user._id);
+        
+        // Prepare redirect path
+        let redirectPath;
         if (formData.userType === 'student') {
-          const studentPath = `/Student/Dashboard/${result.data.user._id}/Welcome`;
-          console.log('Redirecting student to:', studentPath);
-          // Use window.location.href for absolute URL
-          window.location.href = `${import.meta.env.VITE_APP_URL}${studentPath}`;
-          toast.success('Login successful!');
+          redirectPath = `/Student/Dashboard/${user._id}/Welcome`;
         } else {
-          const teacherPath = `/Teacher/Dashboard/${result.data.user._id}`;
-          console.log('Redirecting teacher to:', teacherPath);
-          window.location.href = `${import.meta.env.VITE_APP_URL}${teacherPath}`;
-          toast.success('Login successful!');
+          redirectPath = `/Teacher/Dashboard/${user._id}`;
         }
+        
+        console.log('Redirecting to:', redirectPath);
+        
+        // Use navigate for client-side routing
+        navigate(redirectPath);
+        toast.success('Login successful!');
       } else {
         const errorMessage = result.message || "Login failed. Please try again.";
         console.error('Login failed:', errorMessage);

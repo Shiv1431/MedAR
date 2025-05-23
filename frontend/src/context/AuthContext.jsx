@@ -79,12 +79,12 @@ export function AuthProvider({ children }) {
 
       // Format the request data to match backend expectations
       const requestData = {
-        Email: email.trim(),
-        Password: password.trim()
+        email: email.trim(),
+        password: password.trim()
       }
 
       // Make API request
-      const response = await api.post(`/${userType}/login`, requestData)
+      const response = await api.post(`/auth/${userType}/login`, requestData)
 
       // Log the full response for debugging
       console.log('Login response:', response)
@@ -133,6 +133,13 @@ export function AuthProvider({ children }) {
       return userData
     } catch (error) {
       console.error("Login error:", error)
+      if (error.status === 404) {
+        throw new Error("Invalid email or password")
+      } else if (error.status === 401) {
+        throw new Error("Invalid credentials")
+      } else if (error.status === 422) {
+        throw new Error("Please check your input")
+      }
       throw new Error(error.message || "Login failed")
     }
   }
@@ -156,6 +163,9 @@ export function AuthProvider({ children }) {
       return data.user
     } catch (error) {
       console.error("Registration error:", error)
+      if (error.status === 422) {
+        throw new Error("Please check your input")
+      }
       throw new Error(error.message || "Registration failed")
     }
   }
@@ -166,7 +176,7 @@ export function AuthProvider({ children }) {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          await api.post('/student/logout');
+          await api.post('/auth/logout');
         } catch (err) {
           console.error('Error during logout API call:', err);
           // Continue with client-side logout even if API call fails

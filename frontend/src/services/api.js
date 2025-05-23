@@ -40,15 +40,18 @@ api.interceptors.response.use(
 export const login = async (email, password, userType) => {
   try {
     console.log('Making login request with:', { email, userType });
-    const response = await api.post(`/${userType}/login`, { email, password });
+    const response = await api.post(`/${userType}/login`, {
+      Email: email,
+      Password: password
+    });
     console.log('Login response:', response.data);
     
     if (response.data.success) {
       return {
         success: true,
         data: {
-          token: response.data.token,
-          user: response.data.user
+          token: response.data.data.token,
+          user: response.data.data.user
         }
       };
     } else {

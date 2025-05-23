@@ -15,8 +15,9 @@ export const AuthProvider = ({ children }) => {
     const initializeAuth = async () => {
       const token = localStorage.getItem('token');
       const storedUserType = localStorage.getItem('userType');
+      const userId = localStorage.getItem('userId');
       
-      if (token && storedUserType) {
+      if (token && storedUserType && userId) {
         try {
           const response = await verifyToken(storedUserType);
           if (response.success) {
@@ -29,6 +30,8 @@ export const AuthProvider = ({ children }) => {
           console.error('Token verification failed:', error);
           clearAuth();
         }
+      } else {
+        clearAuth();
       }
       setLoading(false);
     };
@@ -104,7 +107,7 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && !!userType,
   };
 
   if (loading) {

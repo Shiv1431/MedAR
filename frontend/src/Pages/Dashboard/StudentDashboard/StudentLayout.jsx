@@ -12,14 +12,14 @@ const StudentLayout = () => {
   const { ID } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, userType } = useAuth();
 
   useEffect(() => {
     const verifyAndFetchData = async () => {
       const token = localStorage.getItem('token');
-      const userType = localStorage.getItem('userType');
+      const storedUserType = localStorage.getItem('userType');
       
-      if (!token || userType !== 'student') {
+      if (!token || storedUserType !== 'student') {
         navigate('/login');
         return;
       }
@@ -53,9 +53,6 @@ const StudentLayout = () => {
   const handleLogout = async () => {
     try {
       await logout('student');
-      localStorage.removeItem('token');
-      localStorage.removeItem('userType');
-      localStorage.removeItem('userId');
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);

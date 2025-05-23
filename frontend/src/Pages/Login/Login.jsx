@@ -82,13 +82,13 @@ export default function Login() {
           const studentPath = `/Student/Dashboard/${result.data.user._id}/Welcome`;
           console.log('Redirecting student to:', studentPath);
           navigate(studentPath);
+          toast.success('Login successful!');
         } else {
           const teacherPath = `/Teacher/Dashboard/${result.data.user._id}/Welcome`;
           console.log('Redirecting teacher to:', teacherPath);
           navigate(teacherPath);
+          toast.success('Login successful!');
         }
-        
-        toast.success('Login successful!');
       } else {
         const errorMessage = result.message || "Login failed. Please try again.";
         setErrors(prev => ({

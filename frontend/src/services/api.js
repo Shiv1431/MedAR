@@ -19,7 +19,6 @@ const getHeaders = () => {
   return {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Access-Control-Allow-Origin': '*',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
@@ -38,6 +37,7 @@ const api = {
         credentials: 'include',
         headers: getHeaders(),
         mode: 'cors',
+        cache: 'no-cache',
       });
       return handleResponse(response);
     } catch (error) {
@@ -56,6 +56,7 @@ const api = {
         headers: getHeaders(),
         body: JSON.stringify(data),
         mode: 'cors',
+        cache: 'no-cache',
       });
       return handleResponse(response);
     } catch (error) {
@@ -74,6 +75,7 @@ const api = {
         headers: getHeaders(),
         body: JSON.stringify(data),
         mode: 'cors',
+        cache: 'no-cache',
       });
       return handleResponse(response);
     } catch (error) {
@@ -90,7 +92,9 @@ const api = {
         method: 'DELETE',
         credentials: 'include',
         headers: getHeaders(),
+        body: JSON.stringify({}), // Add empty body for consistency
         mode: 'cors',
+        cache: 'no-cache',
       });
       return handleResponse(response);
     } catch (error) {

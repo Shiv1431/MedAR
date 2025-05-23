@@ -1,11 +1,11 @@
 // Environment variables configuration
 const env = {
   // API Configuration
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://localhost:8000/api',
   
   // Frontend Configuration
   APP_NAME: import.meta.env.VITE_APP_NAME || 'MedAR',
-  APP_URL: import.meta.env.VITE_APP_URL || 'http://localhost:5173',
+  APP_URL: import.meta.env.VITE_APP_URL?.replace(/\/$/, '') || 'http://localhost:5173',
   
   // Feature Flags
   ENABLE_ANALYTICS: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
@@ -23,6 +23,11 @@ if (missingEnvVars.length > 0) {
     'Missing required environment variables:',
     missingEnvVars.join(', ')
   );
+}
+
+// Log the API URL in development
+if (import.meta.env.DEV) {
+  console.log('API URL:', env.API_BASE_URL);
 }
 
 export default env; 

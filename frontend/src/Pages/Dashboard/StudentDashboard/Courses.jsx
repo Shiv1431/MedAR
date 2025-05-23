@@ -27,8 +27,7 @@ const Courses = () => {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          },
-          withCredentials: true
+          }
         });
 
         console.log('Courses API Response:', response.data);

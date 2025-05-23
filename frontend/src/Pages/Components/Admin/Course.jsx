@@ -44,9 +44,7 @@ const Course = () => {
   useEffect(() => {
     const fetchCourseRequests = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/admin/${data}/approve/course`, {
-          withCredentials: true, // Ensures cookies are sent with the request
-        });
+        const response = await axios.get(`http://localhost:8000/api/admin/${data}/approve/course`);
   
         console.log("Fetched Data:", response.data.data);
         setCourseReq(response.data.data);
@@ -102,8 +100,6 @@ const Course = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true, // ✅ Ensure cookies are sent
-
       });
       
       console.log(response);

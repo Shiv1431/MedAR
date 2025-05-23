@@ -21,7 +21,6 @@ const StudentDocument = () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/student/StudentDocument/${Data}`, {
           method: "GET",
-          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -81,7 +80,6 @@ const StudentDocument = () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/student/verification/${Data}`, {
         method: "POST",
-        credentials: "include",
         body: formDataObj,
       });
 
@@ -105,7 +103,7 @@ const StudentDocument = () => {
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/student/verification/${Data}/approve`,
         { status, remarks },
-        { withCredentials: true }
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
 
       console.log("Verification status updated successfully!");

@@ -14,9 +14,7 @@ const TeacherDashboard = () => {
   useEffect(() => {
     const fetchTeacherData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/teacher/${data}`, {
-          withCredentials: true
-        });
+        const response = await axios.get(`http://localhost:8000/api/teacher/${data}`);
         setTeacherData(response.data.data);
         setLoading(false);
       } catch (err) {

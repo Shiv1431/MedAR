@@ -25,8 +25,7 @@ const Classes = () => {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          },
-          withCredentials: true
+          }
         });
 
         console.log('Classes API Response:', response.data);

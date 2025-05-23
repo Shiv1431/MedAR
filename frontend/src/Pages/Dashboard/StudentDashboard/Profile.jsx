@@ -16,7 +16,6 @@ const Profile = () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/student/${ID}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-          withCredentials: true
         });
         setUserData(response.data.data.student);
         setLoading(false);

@@ -22,7 +22,6 @@ function VarifyDoc() {
     
           const response = await fetch(`http://localhost:8000/api/admin/${adminID}/approve/${type}/${id}`, {
             method: 'POST',
-            credentials: "include",
             headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${localStorage.getItem("token")}`
@@ -47,7 +46,6 @@ function VarifyDoc() {
             try {
               const docData = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/${adminID}/documents/${type}/${ID}`, {
                 method: "GET",
-                credentials: "include",
                 headers: {
                   "Content-Type": "application/json",
                   "Authorization": `Bearer ${localStorage.getItem("token")}`

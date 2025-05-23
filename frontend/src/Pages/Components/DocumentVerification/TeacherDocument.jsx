@@ -17,7 +17,6 @@ const TeacherDocument = () => {
       try {
         const response = await fetch(`http://localhost:8000/api/teacher/TeacherDocument/${Data}`, {
           method: "GET",
-          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -83,7 +82,9 @@ const TeacherDocument = () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/teacher/verification/${Data}`, {
         method: "POST",
-        credentials: "include",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`
+        },
         body: formDataObj,
       });
 

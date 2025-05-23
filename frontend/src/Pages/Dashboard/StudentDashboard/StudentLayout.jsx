@@ -54,8 +54,7 @@ const StudentLayout = () => {
           {
             headers: {
               'Content-Type': 'application/json'
-            },
-            withCredentials: true
+            }
           }
         );
 

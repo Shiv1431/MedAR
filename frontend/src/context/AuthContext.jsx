@@ -37,8 +37,7 @@ export const AuthProvider = ({ children }) => {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
-            },
-            withCredentials: true
+            }
           }
         );
 
@@ -87,7 +86,6 @@ export const AuthProvider = ({ children }) => {
         loginUrl,
         { Email: email, Password: password },
         { 
-          withCredentials: true,
           headers: {
             'Content-Type': 'application/json'
           }
@@ -122,8 +120,7 @@ export const AuthProvider = ({ children }) => {
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-              },
-              withCredentials: true
+              }
             }
           );
 
@@ -240,8 +237,7 @@ export const AuthProvider = ({ children }) => {
           headers: { 
             Authorization: `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
-          },
-          withCredentials: true
+          }
         }
       );
     } catch (error) {
@@ -276,8 +272,7 @@ export const AuthProvider = ({ children }) => {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
-          },
-          withCredentials: true
+          }
         }
       );
 

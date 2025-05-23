@@ -17,9 +17,6 @@ const TeacherLayout = () => {
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_API_BASE_URL}/teacher/${ID}`,
-          {
-            withCredentials: true,
-          }
         );
         setUserData(response.data.data.teacher);
         setLoading(false);
@@ -41,10 +38,6 @@ const TeacherLayout = () => {
       // Try to call the logout API
       await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/teacher/logout`,
-        {},
-        {
-          withCredentials: true,
-        }
       );
     } catch (error) {
       console.log('Logout API call failed, proceeding with client-side cleanup:', error);

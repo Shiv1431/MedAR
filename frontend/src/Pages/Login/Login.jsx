@@ -87,10 +87,10 @@ export default function Login() {
           redirectPath = `/Teacher/Dashboard/${user._id}`;
         }
         
-        console.log('Redirecting to:', redirectPath);
+        console.log('Redirecting to:', `${import.meta.env.VITE_APP_URL}${redirectPath}`);
         
-        // Use navigate for client-side routing
-        navigate(redirectPath);
+        // Use window.location.href for absolute URL to ensure proper redirection
+        window.location.href = `${import.meta.env.VITE_APP_URL}${redirectPath}`;
         toast.success('Login successful!');
       } else {
         const errorMessage = result.message || "Login failed. Please try again.";

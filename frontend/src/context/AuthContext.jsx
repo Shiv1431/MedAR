@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
 
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/${userType}/verify-token`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/verify-token`,
           {
             headers: { 
               Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, userType) => {
     try {
-      const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/${userType}/login`;
+      const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/login`;
       console.log('Making login request to:', apiUrl);
       console.log('Request payload:', { Email: email, Password: password });
       
@@ -123,7 +123,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async (userType) => {
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/${userType}/logout`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/logout`,
         {},
         {
           headers: { 

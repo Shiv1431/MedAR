@@ -6,21 +6,32 @@ import './StudentLayout.css';
 const StudentLayout = () => {
   const { ID } = useParams();
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, userType, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate('/login');
-    } else if (user && user._id !== ID) {
-      navigate(`/Student/Dashboard/${user._id}`);
+    if (!loading) {
+      if (!user || !userType) {
+        console.log('No user or userType found, redirecting to login');
+        navigate('/login');
+      } else if (userType !== 'student') {
+        console.log('User is not a student, redirecting to login');
+        navigate('/login');
+      } else if (user._id !== ID) {
+        console.log('User ID mismatch, redirecting to correct dashboard');
+        navigate(`/Student/Dashboard/${user._id}`);
+      }
     }
-  }, [user, loading, ID, navigate]);
+  }, [user, userType, loading, ID, navigate]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
 
-  if (!user) {
+  if (!user || userType !== 'student') {
     return null;
   }
 

@@ -13,17 +13,20 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const verifyToken = async (userType) => {
+    const initializeAuth = async () => {
       try {
         const token = localStorage.getItem('token');
-        if (!token) {
-          console.log('No token found');
-          return false;
+        const storedUserType = localStorage.getItem('userType');
+        
+        if (!token || !storedUserType) {
+          console.log('No token or user type found');
+          setLoading(false);
+          return;
         }
 
-        console.log('Verifying token for:', userType);
+        console.log('Verifying token for:', storedUserType);
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/verify-token`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/${storedUserType}/verify-token`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -36,19 +39,29 @@ export const AuthProvider = ({ children }) => {
         console.log('Token verification response:', response.data);
         if (response.data.success) {
           setUser(response.data.data.student);
-          return true;
+          setUserType(storedUserType);
+        } else {
+          // Clear invalid data
+          localStorage.removeItem('token');
+          localStorage.removeItem('userType');
+          localStorage.removeItem('userId');
+          setUser(null);
+          setUserType(null);
         }
-        return false;
       } catch (error) {
         console.error('Token verification failed:', error.response?.data || error.message);
+        // Clear invalid data
         localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.removeItem('userType');
+        localStorage.removeItem('userId');
         setUser(null);
-        return false;
+        setUserType(null);
+      } finally {
+        setLoading(false);
       }
     };
 
-    verifyToken(userType);
+    initializeAuth();
   }, []);
 
   const login = async (email, password, userType) => {

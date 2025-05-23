@@ -1,17 +1,18 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://medarbackend.vercel.app/api';
+const API_BASE_URL = 'https://medarbackend.vercel.app/api';
 
-const apiService = axios.create({
-  baseURL: BASE_URL,
+// Create axios instance with base URL
+const api = axios.create({
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor
-apiService.interceptors.request.use(
+// Add request interceptor to add token
+api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -25,7 +26,7 @@ apiService.interceptors.request.use(
 );
 
 // Response interceptor
-apiService.interceptors.response.use(
+api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
@@ -37,65 +38,41 @@ apiService.interceptors.response.use(
 );
 
 // Auth methods
-export const login = async (credentials) => {
+export const login = async (email, password, userType) => {
   try {
-    // Format the request data according to backend expectations
-    const requestData = {
-      Email: credentials.email,
-      Password: credentials.password
-    };
-
-    console.log('Login request data:', requestData); // Debug log
-
-    // Use the correct endpoint based on user type
-    const endpoint = credentials.userType === 'student' ? '/student/login' : '/teacher/login';
-    console.log('Using endpoint:', endpoint); // Debug log
-
-    const response = await apiService.post(endpoint, requestData);
-    console.log('Login response:', response); // Debug log
-
-    // Add userType to the response data
-    return {
-      ...response,
-      data: {
-        ...response.data,
-        userType: credentials.userType
-      }
-    };
-  } catch (error) {
-    console.error('Login error details:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message
+    const response = await api.post(`/${userType}/login`, {
+      Email: email,
+      Password: password
     });
-
-    // Handle specific error cases
-    if (error.response?.status === 422) {
-      throw new Error('Invalid credentials or user does not exist');
-    } else if (error.response?.status === 404) {
-      throw new Error(`${credentials.userType} account not found`);
-    } else {
-      throw error;
-    }
-  }
-};
-
-export const signup = async (userData) => {
-  try {
-    const response = await apiService.post('/student/signup', userData);
-    return response;
+    return response.data;
   } catch (error) {
-    console.error('Signup error:', error);
     throw error;
   }
 };
 
-export const logout = async () => {
+export const signup = async (userData, userType) => {
   try {
-    const response = await apiService.post('/student/logout');
-    return response;
+    const response = await api.post(`/${userType}/signup`, userData);
+    return response.data;
   } catch (error) {
-    console.error('Logout error:', error);
+    throw error;
+  }
+};
+
+export const logout = async (userType) => {
+  try {
+    const response = await api.post(`/${userType}/logout`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const verifyToken = async (userType) => {
+  try {
+    const response = await api.get(`/${userType}/verify-token`);
+    return response.data;
+  } catch (error) {
     throw error;
   }
 };
@@ -103,7 +80,7 @@ export const logout = async () => {
 // Profile methods
 export const getProfile = async () => {
   try {
-    const response = await apiService.get('/student/profile');
+    const response = await api.get('/student/profile');
     return response;
   } catch (error) {
     console.error('Get profile error:', error);
@@ -113,7 +90,7 @@ export const getProfile = async () => {
 
 export const updateProfile = async (profileData) => {
   try {
-    const response = await apiService.put('/student/profile', profileData);
+    const response = await api.put('/student/profile', profileData);
     return response;
   } catch (error) {
     console.error('Update profile error:', error);
@@ -126,7 +103,7 @@ export const uploadProfileImage = async (imageFile) => {
     const formData = new FormData();
     formData.append('profileImage', imageFile);
     
-    const response = await apiService.post('/student/profile/image', formData, {
+    const response = await api.post('/student/profile/image', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -141,7 +118,7 @@ export const uploadProfileImage = async (imageFile) => {
 // Generic methods
 const get = async (url, config = {}) => {
   try {
-    const response = await apiService.get(url, config);
+    const response = await api.get(url, config);
     return response;
   } catch (error) {
     console.error('GET request error:', error);
@@ -151,7 +128,7 @@ const get = async (url, config = {}) => {
 
 const post = async (url, data, config = {}) => {
   try {
-    const response = await apiService.post(url, data, config);
+    const response = await api.post(url, data, config);
     return response;
   } catch (error) {
     console.error('POST request error:', error);
@@ -161,7 +138,7 @@ const post = async (url, data, config = {}) => {
 
 const put = async (url, data, config = {}) => {
   try {
-    const response = await apiService.put(url, data, config);
+    const response = await api.put(url, data, config);
     return response;
   } catch (error) {
     console.error('PUT request error:', error);
@@ -171,7 +148,7 @@ const put = async (url, data, config = {}) => {
 
 const deleteRequest = async (url, config = {}) => {
   try {
-    const response = await apiService.delete(url, config);
+    const response = await api.delete(url, config);
     return response;
   } catch (error) {
     console.error('DELETE request error:', error);
@@ -179,5 +156,5 @@ const deleteRequest = async (url, config = {}) => {
   }
 };
 
-export default apiService;
+export default api;
 

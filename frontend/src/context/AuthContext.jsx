@@ -3,12 +3,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { login as apiLogin, signup as apiSignup, logout as apiLogout } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -56,44 +58,27 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password, userType) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      console.log('Login attempt with userType:', userType); // Debug log
-      
-      const response = await apiLogin({ email, password, userType });
-      console.log('Login response:', response); // Debug log
-
+      const response = await apiLogin(email, password, userType);
       if (response.success) {
         const { token, user } = response.data;
-        
-        // Store user type in localStorage
-        localStorage.setItem('userType', userType);
-        
         localStorage.setItem('token', token);
         setUser(user);
         toast.success('Login successful!');
         
-        // Ensure we're using the correct path based on userType
-        const redirectPath = userType === 'student' 
-          ? `/Student/Dashboard/${user._id}/Welcome`
-          : `/Teacher/Dashboard/${user._id}/Welcome`;
-        
-        console.log('Login successful, redirecting to:', redirectPath); // Debug log
-        return {
-          success: true,
-          user,
-          redirectPath
-        };
+        // Redirect based on user role with correct URL structure
+        if (user.role === 'student') {
+          navigate(`/Student/Dashboard/${user._id}/Welcome`);
+        } else if (user.role === 'teacher') {
+          navigate(`/Teacher/Dashboard/${user._id}/Welcome`);
+        }
       } else {
-        const errorMessage = response.message || 'Login failed';
-        toast.error(errorMessage);
-        return { success: false, message: errorMessage };
+        toast.error(response.message || 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error.message || 'Login failed. Please try again.';
-      toast.error(errorMessage);
-      return { success: false, message: errorMessage };
+      toast.error(error.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
     }

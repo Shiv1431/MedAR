@@ -42,9 +42,9 @@ export function AuthProvider({ children }) {
           
           // If no saved user, try to fetch from API
           try {
-            const response = await api.get(`/users/me`)
+            const response = await api.get(`/student/profile`)
             if (response && response.data) {
-              const userData = response.data.user
+              const userData = response.data
               setUser(userData)
               localStorage.setItem('user', JSON.stringify(userData))
             }
@@ -84,7 +84,7 @@ export function AuthProvider({ children }) {
       }
 
       // Make API request
-      const response = await api.post(`/auth/${userType}/login`, requestData)
+      const response = await api.post(`/${userType}/login`, requestData)
 
       // Log the full response for debugging
       console.log('Login response:', response)
@@ -146,7 +146,7 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     try {
-      const response = await api.post("/auth/register", userData)
+      const response = await api.post("/register", userData)
       if (!response || !response.success) {
         throw new Error(response?.message || "Registration failed")
       }
@@ -176,7 +176,7 @@ export function AuthProvider({ children }) {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          await api.post('/auth/logout');
+          await api.post('/logout');
         } catch (err) {
           console.error('Error during logout API call:', err);
           // Continue with client-side logout even if API call fails

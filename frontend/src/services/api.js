@@ -16,7 +16,13 @@ const handleResponse = async (response) => {
       data: error
     };
   }
-  return response.json();
+  const data = await response.json();
+  // Transform the response to match the expected format
+  return {
+    success: true,
+    data: data.data || data,
+    message: data.message
+  };
 };
 
 const getHeaders = () => {

@@ -28,11 +28,8 @@ const authSTD = asyncHandler(async(req,_,next) =>{
     if(!Student){
         throw new ApiError(401, "invalid access token")
     }
-
     req.Student = Student
     next()
-
-    
 })
 
 export { authSTD }

@@ -92,6 +92,7 @@ export default function Login() {
         }
       } else {
         const errorMessage = result.message || "Login failed. Please try again.";
+        console.error('Login failed:', errorMessage);
         setErrors(prev => ({
           ...prev,
           submit: errorMessage
@@ -100,7 +101,12 @@ export default function Login() {
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error.message || "Login failed. Please try again.";
+      const errorMessage = error.response?.data?.message || error.message || "Login failed. Please try again.";
+      console.error('Error details:', {
+        message: errorMessage,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       setErrors(prev => ({
         ...prev,
         submit: errorMessage

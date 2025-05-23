@@ -52,11 +52,21 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, userType) => {
     try {
+      console.log('Making login request to:', `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/login`);
+      console.log('Request payload:', { Email: email, Password: password });
+      
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/login`,
         { Email: email, Password: password },
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
+
+      console.log('Login response:', response.data);
 
       if (response.data.success) {
         setUser(response.data.data.user);
@@ -69,6 +79,12 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: response.data.message };
       }
     } catch (error) {
+      console.error('Login error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
       return {
         success: false,
         message: error.response?.data?.message || 'Login failed'

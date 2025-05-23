@@ -62,7 +62,11 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         setUser(user);
         toast.success('Login successful!');
-        navigate('/Student/Dashboard/' + user._id + '/Welcome');
+        if (user.role === 'student') {
+          navigate(`/Student/Dashboard/${user._id}/Welcome`);
+        } else {
+          navigate(`/Teacher/Dashboard/${user._id}/Welcome`);
+        }
       } else {
         toast.error(response.message || 'Login failed');
       }

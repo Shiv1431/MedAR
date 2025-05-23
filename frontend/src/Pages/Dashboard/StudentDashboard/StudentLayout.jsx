@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, NavLink, useParams, Navigate, useNavigate, Link } from 'react-router-dom';
+import { Outlet, NavLink, useParams, useNavigate } from 'react-router-dom';
 import { FaHome, FaSearch, FaBookMedical, FaVrCardboard, FaUserMd, FaUser, FaSignOutAlt } from 'react-icons/fa';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -53,29 +53,34 @@ const StudentLayout = () => {
 
   const navItems = [
     {
-      path: `Welcome`,
+      path: 'Welcome',
       icon: <FaHome className="w-6 h-6" />,
       text: 'Dashboard'
     },
     {
-      path: `AR-Anatomy`,
+      path: 'AR-Anatomy',
       icon: <FaVrCardboard className="w-6 h-6" />,
       text: '3D Anatomy'
     },
     {
-      path: `Courses`,
+      path: 'Courses',
       icon: <FaBookMedical className="w-6 h-6" />,
       text: 'Medical Courses'
     },
     {
-      path: `Classes`,
+      path: 'Classes',
       icon: <FaUserMd className="w-6 h-6" />,
       text: 'My Classes'
     },
     {
-      path: `Search`,
+      path: 'Search',
       icon: <FaSearch className="w-6 h-6" />,
       text: 'Find Mentors'
+    },
+    {
+      path: 'Profile',
+      icon: <FaUser className="w-6 h-6" />,
+      text: 'My Profile'
     }
   ];
 

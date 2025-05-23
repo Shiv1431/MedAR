@@ -73,8 +73,14 @@ export const AuthProvider = ({ children }) => {
 
       console.log('Login response:', response.data);
 
-      if (response.data.success) {
+      if (response.data && response.data.data) {
         const { user, token } = response.data.data;
+        
+        if (!user || !token) {
+          console.error('Invalid response data:', response.data);
+          return { success: false, message: 'Invalid response from server' };
+        }
+
         setUser(user);
         setUserType(userType);
         localStorage.setItem('token', token);
@@ -82,7 +88,8 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('userId', user._id);
         return { success: true, data: response.data.data };
       } else {
-        return { success: false, message: response.data.message };
+        console.error('Unexpected response structure:', response.data);
+        return { success: false, message: 'Unexpected response from server' };
       }
     } catch (error) {
       console.error('Login error details:', {
@@ -91,9 +98,20 @@ export const AuthProvider = ({ children }) => {
         status: error.response?.status,
         headers: error.response?.headers
       });
+
+      if (error.response) {
+        if (error.response.status === 400) {
+          return { success: false, message: 'Invalid email or password' };
+        } else if (error.response.status === 401) {
+          return { success: false, message: 'Email not verified' };
+        } else if (error.response.status === 403) {
+          return { success: false, message: 'Incorrect password' };
+        }
+      }
+
       return {
         success: false,
-        message: error.response?.data?.message || 'Login failed'
+        message: error.response?.data?.message || 'Login failed. Please try again.'
       };
     }
   };

@@ -25,7 +25,11 @@ export const AuthProvider = ({ children }) => {
           return;
         }
 
+        // Set the token in axios defaults
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
         const response = await apiVerifyToken(storedUserType);
+        console.log('Initial token verification response:', response);
         
         if (response.success) {
           const userData = response.data.student || response.data.teacher;
@@ -41,6 +45,8 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('userType');
         localStorage.removeItem('userId');
         localStorage.removeItem('user');
+        // Clear axios default header
+        delete axios.defaults.headers.common['Authorization'];
         setUser(null);
         setUserType(null);
       } finally {
@@ -54,17 +60,32 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password, userType) => {
     try {
       const response = await apiLogin(email, password, userType);
+      console.log('Login response in AuthContext:', response);
       
       if (response.success) {
         const { user, token } = response.data;
+        console.log('Token received in AuthContext:', token ? 'Token exists' : 'No token');
         
+        if (!token) {
+          console.error('No token received from login response');
+          return {
+            success: false,
+            message: 'No authentication token received'
+          };
+        }
+
+        // Store in localStorage
         localStorage.setItem('token', token);
         localStorage.setItem('userType', userType);
         localStorage.setItem('userId', user._id);
         localStorage.setItem('user', JSON.stringify(user));
 
+        // Set the token in axios defaults
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
         try {
           const verifyResponse = await apiVerifyToken(userType);
+          console.log('Verify token response in AuthContext:', verifyResponse);
           
           if (verifyResponse.success) {
             setUser(user);
@@ -79,10 +100,13 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (verifyError) {
           console.error('Token verification failed after login:', verifyError);
+          // Clear data if verification fails
           localStorage.removeItem('token');
           localStorage.removeItem('userType');
           localStorage.removeItem('userId');
           localStorage.removeItem('user');
+          // Clear axios default header
+          delete axios.defaults.headers.common['Authorization'];
           return { 
             success: false, 
             message: verifyError.message || 'Login successful but token verification failed'

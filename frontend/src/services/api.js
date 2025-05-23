@@ -50,10 +50,13 @@ export const login = async (email, password, userType) => {
     console.log('Login response:', response.data);
     
     if (response.data.success) {
+      const token = response.data.data.token;
+      console.log('Received token:', token ? 'Token exists' : 'No token received');
+      
       return {
         success: true,
         data: {
-          token: response.data.data.token,
+          token: token,
           user: response.data.data.user
         }
       };

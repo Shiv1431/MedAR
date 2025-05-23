@@ -17,6 +17,14 @@ const __dirname = path.dirname(__filename);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/images", imageRoutes);
 
+app.get("/", (req, res) => {
+  res.send({
+    activeStatus:true,
+    error:false,
+    message:"Server is running"
+  });
+})
+
 db()
   .then(() => {
     app.listen(process.env.PORT || 8000, () => {

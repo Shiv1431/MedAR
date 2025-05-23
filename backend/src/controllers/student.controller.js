@@ -562,6 +562,24 @@ export const getClasses = asyncHandler(async (req, res) => {
     }
 });
 
+const verifyToken = asyncHandler(async (req, res) => {
+  try {
+    // If we reach here, the token is valid (authSTD middleware has already verified it)
+    const student = await student.findById(req.Student._id)
+      .select("-Password -Refreshtoken");
+
+    if (!student) {
+      throw new ApiError(401, "Invalid token");
+    }
+
+    return res.status(200).json(
+      new ApiResponse(200, { student }, "Token is valid")
+    );
+  } catch (error) {
+    throw new ApiError(401, "Invalid token");
+  }
+});
+
 export {
   signup,
   mailVerified,
@@ -571,5 +589,8 @@ export {
   getStudent,
   forgetPassword,
   resetPassword,
-  updateProfile
+  updateProfile,
+  getCourses,
+  getClasses,
+  verifyToken
 };

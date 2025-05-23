@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {signup, mailVerified, login, logout, addStudentDetails, getStudent, forgetPassword, resetPassword, updateProfile, getCourses, getClasses } from "../controllers/student.controller.js";
+import {signup, mailVerified, login, logout, addStudentDetails, getStudent, forgetPassword, resetPassword, updateProfile, getCourses, getClasses, verifyToken } from "../controllers/student.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import {authSTD} from "../middlewares/stdAuth.middleware.js"
 import { authSchema } from "../middlewares/joiLogin.middleware.js";
@@ -11,14 +11,14 @@ router.route("/signup").post(signup)
 router.route("/verify").get(mailVerified)
 router.route("/login").post(authSchema, login)
 router.route("/logout").post(authSTD, logout)
-
-// Password management routes
-router.route('/forgetpassword').post(forgetPassword)
+router.route("/forgetpassword").post(forgetPassword)
 router.route('/forgetpassword/:token').post(resetPassword)
+router.route("/verify-token").get(authSTD, verifyToken)
 
 // Student profile and document routes
 router.route("/StudentDocument/:id").get(authSTD, getStudent)
 router.route("/profile/:id").get(authSTD, getStudent)
+router.route("/:id").get(authSTD, getStudent)
 
 // Profile update route
 router.route('/profile/update').put(

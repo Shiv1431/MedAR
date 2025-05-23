@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 import { login as apiLogin, signup as apiSignup, logout as apiLogout, verifyToken } from '../services/api';
 
 const AuthContext = createContext(null);
@@ -12,57 +13,66 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    const verifyToken = async () => {
       const token = localStorage.getItem('token');
-      const storedUserType = localStorage.getItem('userType');
-      const userId = localStorage.getItem('userId');
-      
-      if (token && storedUserType && userId) {
-        try {
-          const response = await verifyToken(storedUserType);
-          if (response.success) {
-            setUser(response.data.user);
-            setUserType(storedUserType);
-          } else {
-            clearAuth();
-          }
-        } catch (error) {
-          console.error('Token verification failed:', error);
-          clearAuth();
-        }
-      } else {
-        clearAuth();
+      const userType = localStorage.getItem('userType');
+
+      if (!token || !userType) {
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/verify-token`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true
+          }
+        );
+
+        if (response.data.success) {
+          setUser(response.data.data.student);
+          setUserType(userType);
+        } else {
+          localStorage.removeItem('token');
+          localStorage.removeItem('userType');
+        }
+      } catch (error) {
+        console.error('Token verification failed:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('userType');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    initializeAuth();
+    verifyToken();
   }, []);
 
-  const clearAuth = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userType');
-    localStorage.removeItem('userId');
-    setUser(null);
-    setUserType(null);
-  };
-
-  const login = async (email, password, type) => {
+  const login = async (email, password, userType) => {
     try {
-      const result = await apiLogin(email, password, type);
-      if (result.success) {
-        setUser(result.data.user);
-        setUserType(type);
-        localStorage.setItem('token', result.data.token);
-        localStorage.setItem('userType', type);
-        localStorage.setItem('userId', result.data.user._id);
-        return result;
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/login`,
+        { email, password },
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+        setUser(response.data.data.user);
+        setUserType(userType);
+        localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('userType', userType);
+        localStorage.setItem('userId', response.data.data.user._id);
+        return { success: true, data: response.data.data };
       } else {
-        throw new Error(result.message || 'Login failed');
+        return { success: false, message: response.data.message };
       }
     } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Login failed'
+      };
     }
   };
 
@@ -88,15 +98,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async (type) => {
+  const logout = async (userType) => {
     try {
-      await apiLogout(type);
-      clearAuth();
-      toast.success('Logged out successfully');
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/logout`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          withCredentials: true
+        }
+      );
     } catch (error) {
       console.error('Logout error:', error);
-      clearAuth();
-      toast.error('Error during logout');
+    } finally {
+      setUser(null);
+      setUserType(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('userType');
+      localStorage.removeItem('userId');
     }
   };
 

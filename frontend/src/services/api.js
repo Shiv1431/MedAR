@@ -5,13 +5,12 @@ const API_BASE_URL = 'https://medarbackend.vercel.app/api';
 // Create axios instance with base URL
 const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add request interceptor to add token
+// Add request interceptor to include auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -40,19 +39,16 @@ api.interceptors.response.use(
 // Auth methods
 export const login = async (email, password, userType) => {
   try {
-    console.log('Making login request with:', { email, password, userType });
-    const response = await api.post(`/${userType}/login`, {
-      Email: email,
-      Password: password
-    });
+    console.log('Making login request with:', { email, userType });
+    const response = await api.post(`/${userType}/login`, { email, password });
     console.log('Login response:', response.data);
     
     if (response.data.success) {
       return {
         success: true,
         data: {
-          token: response.data.data.token,
-          user: response.data.data.user
+          token: response.data.token,
+          user: response.data.user
         }
       };
     } else {
@@ -62,7 +58,7 @@ export const login = async (email, password, userType) => {
       };
     }
   } catch (error) {
-    console.error('Login API error:', error.response?.data || error);
+    console.error('Login error:', error.response?.data || error.message);
     return {
       success: false,
       message: error.response?.data?.message || 'Login failed. Please try again.'
@@ -75,7 +71,7 @@ export const signup = async (userData, userType) => {
     const response = await api.post(`/${userType}/signup`, userData);
     return response.data;
   } catch (error) {
-    throw error;
+    throw error.response?.data || error.message;
   }
 };
 
@@ -84,7 +80,7 @@ export const logout = async (userType) => {
     const response = await api.post(`/${userType}/logout`);
     return response.data;
   } catch (error) {
-    throw error;
+    throw error.response?.data || error.message;
   }
 };
 
@@ -93,44 +89,33 @@ export const verifyToken = async (userType) => {
     const response = await api.get(`/${userType}/verify-token`);
     return response.data;
   } catch (error) {
-    throw error;
+    throw error.response?.data || error.message;
   }
 };
 
 // Profile methods
 export const getProfile = async (userType, userId) => {
   try {
-    console.log(`Fetching ${userType} profile for ID:`, userId);
-    const response = await api.get(`/${userType}/StudentDocument/${userId}`);
-    console.log('Profile response:', response.data);
-    
-    if (response.data && response.data.data) {
-      return {
-        success: true,
-        data: response.data.data.student
-      };
-    } else {
-      return {
-        success: false,
-        message: 'No profile data found'
-      };
-    }
+    const response = await api.get(`/${userType}/profile/${userId}`);
+    return {
+      success: true,
+      data: response.data
+    };
   } catch (error) {
-    console.error('Error fetching profile:', error);
+    console.error('Get profile error:', error.response?.data || error.message);
     return {
       success: false,
-      message: error.response?.data?.message || 'Failed to fetch profile data'
+      message: error.response?.data?.message || 'Failed to fetch profile'
     };
   }
 };
 
-export const updateProfile = async (profileData) => {
+export const updateProfile = async (userType, userId, data) => {
   try {
-    const response = await api.put('/student/profile', profileData);
-    return response;
+    const response = await api.put(`/${userType}/profile/${userId}`, data);
+    return response.data;
   } catch (error) {
-    console.error('Update profile error:', error);
-    throw error;
+    throw error.response?.data || error.message;
   }
 };
 
@@ -189,6 +174,24 @@ const deleteRequest = async (url, config = {}) => {
   } catch (error) {
     console.error('DELETE request error:', error);
     throw error;
+  }
+};
+
+export const getCourses = async (userType, userId) => {
+  try {
+    const response = await api.get(`/${userType}/courses/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getClassMentor = async (userId) => {
+  try {
+    const response = await api.get(`/student/class-mentor/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
   }
 };
 

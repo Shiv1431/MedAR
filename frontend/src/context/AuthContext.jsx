@@ -2,91 +2,64 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { login as apiLogin, signup as apiSignup, logout as apiLogout } from '../services/api';
+import { login as apiLogin, signup as apiSignup, logout as apiLogout, verifyToken } from '../services/api';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [userType, setUserType] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const initializeAuth = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          await verifyToken(token);
+      const token = localStorage.getItem('token');
+      const storedUserType = localStorage.getItem('userType');
+      
+      if (token && storedUserType) {
+        try {
+          const response = await verifyToken(storedUserType);
+          if (response.success) {
+            setUser(response.data.user);
+            setUserType(storedUserType);
+          } else {
+            clearAuth();
+          }
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          clearAuth();
         }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-        localStorage.removeItem('token');
-        setUser(null);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
 
     initializeAuth();
   }, []);
 
-  const verifyToken = async (token) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/student/verify-token`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error('Token verification failed');
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        setUser(data.user);
-      } else {
-        throw new Error('Token verification failed');
-      }
-    } catch (error) {
-      console.error('Token verification failed:', error);
-      localStorage.removeItem('token');
-      setUser(null);
-      throw error;
-    }
+  const clearAuth = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('userId');
+    setUser(null);
+    setUserType(null);
   };
 
-  const login = async (email, password, userType) => {
-    setLoading(true);
+  const login = async (email, password, type) => {
     try {
-      const response = await apiLogin(email, password, userType);
-      if (response.success) {
-        const { token, user } = response.data;
-        localStorage.setItem('token', token);
-        setUser(user);
-        toast.success('Login successful!');
-        
-        // Return the redirect path based on user role
-        if (user.role === 'student') {
-          return {
-            success: true,
-            redirectPath: `/Student/Dashboard/${user._id}/Welcome`
-          };
-        } else if (user.role === 'teacher') {
-          return {
-            success: true,
-            redirectPath: `/Teacher/Dashboard/${user._id}/Welcome`
-          };
-        }
+      const result = await apiLogin(email, password, type);
+      if (result.success) {
+        setUser(result.data.user);
+        setUserType(type);
+        localStorage.setItem('token', result.data.token);
+        localStorage.setItem('userType', type);
+        localStorage.setItem('userId', result.data.user._id);
+        return result;
       } else {
-        toast.error(response.message || 'Login failed');
-        return { success: false, message: response.message };
+        throw new Error(result.message || 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(error.response?.data?.message || 'Login failed');
-      return { success: false, message: 'Login failed' };
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
 
@@ -112,29 +85,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
+  const logout = async (type) => {
     try {
-      setLoading(true);
-      await apiLogout();
-      localStorage.removeItem('token');
-      setUser(null);
-      toast.success('Logged out successfully!');
-      return { success: true, redirectPath: '/login' };
+      await apiLogout(type);
+      clearAuth();
+      toast.success('Logged out successfully');
     } catch (error) {
       console.error('Logout error:', error);
-      toast.error('Logout failed. Please try again.');
-      return { success: false, message: 'Logout failed' };
-    } finally {
-      setLoading(false);
+      clearAuth();
+      toast.error('Error during logout');
     }
   };
 
   const value = {
     user,
+    userType,
     loading,
     login,
     signup,
     logout,
+    isAuthenticated: !!user,
   };
 
   if (loading) {

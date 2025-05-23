@@ -81,12 +81,12 @@ export default function Login() {
         if (formData.userType === 'student') {
           const studentPath = `/Student/Dashboard/${result.data.user._id}`;
           console.log('Redirecting student to:', studentPath);
-          navigate(studentPath);
+          navigate(studentPath, { replace: true });
           toast.success('Login successful!');
         } else {
           const teacherPath = `/Teacher/Dashboard/${result.data.user._id}`;
           console.log('Redirecting teacher to:', teacherPath);
-          navigate(teacherPath);
+          navigate(teacherPath, { replace: true });
           toast.success('Login successful!');
         }
       } else {

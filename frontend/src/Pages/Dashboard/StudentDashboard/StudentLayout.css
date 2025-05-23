@@ -195,4 +195,21 @@
   .sidebar.closed + .flex-1 {
     margin-left: 0;
   }
+}
+
+.student-dashboard {
+  min-height: 100vh;
+  background-color: #f3f4f6;
+}
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
 } 

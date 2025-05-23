@@ -13,44 +13,42 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const verifyToken = async () => {
-      const token = localStorage.getItem('token');
-      const userType = localStorage.getItem('userType');
-
-      if (!token || !userType) {
-        setLoading(false);
-        return;
-      }
-
+    const verifyToken = async (userType) => {
       try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('No token found');
+          return false;
+        }
+
+        console.log('Verifying token for:', userType);
         const response = await axios.get(
           `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/verify-token`,
           {
-            headers: { 
+            headers: {
               Authorization: `Bearer ${token}`,
-              'Accept': 'application/json'
+              'Content-Type': 'application/json'
             },
             withCredentials: true
           }
         );
 
+        console.log('Token verification response:', response.data);
         if (response.data.success) {
           setUser(response.data.data.student);
-          setUserType(userType);
-        } else {
-          localStorage.removeItem('token');
-          localStorage.removeItem('userType');
+          return true;
         }
+        return false;
       } catch (error) {
-        console.error('Token verification failed:', error);
+        console.error('Token verification failed:', error.response?.data || error.message);
         localStorage.removeItem('token');
-        localStorage.removeItem('userType');
-      } finally {
-        setLoading(false);
+        localStorage.removeItem('user');
+        setUser(null);
+        return false;
       }
     };
 
-    verifyToken();
+    verifyToken(userType);
   }, []);
 
   const login = async (email, password, userType) => {

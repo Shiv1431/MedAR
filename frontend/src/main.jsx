@@ -42,41 +42,93 @@ import WelcomeMedical from './Pages/Dashboard/StudentDashboard/WelcomeMedical'
 import MedicalARViewer from './Pages/Dashboard/StudentDashboard/MedicalARViewer'
 import UserDashboard from './Pages/UserDashboard/UserDashboard'
 import { AuthProvider } from './context/AuthContext'
-import ProtectedRoute from './Components/ProtectedRoute'
+import ProtectedRoute from './context/ProtectedRoute'
 
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    
     <Route path='/' element={<Layout/>}>
-      
+      {/* Public Routes */}
       <Route path='/' element={<Landing/>}/>
       <Route path='/login' element={<Login/>}/>
       <Route path='/Signup' element={<Signup/>}/>
-      <Route path='/User/Dashboard/:userid' element={<UserDashboard/>}/>
-      <Route path='/Search/:subject' element={<SearchData/>}/>
-      <Route path='/StudentDocument/:Data' element={<StudentDocument/>}/>
-      <Route path='/TeacherDocument/:Data' element={<TeacherDocument/>}/>
-      <Route path='/courses' element={<MedicalCourses/> }/>
       <Route path='/contact' element={<Contact/>}/>
       <Route path='/about' element={<About/>}/>
-      <Route path='/chat' element={<Chatbot/>}/>
       <Route path='/varifyEmail' element={<VarifyEmail/>}/>
       <Route path='/adminLogin/' element={<AdminLogin/>}/>
       <Route path='/rejected/:user/:ID' element={<Rejected/>}/>
       <Route path='/pending' element={<Pending/>}/>
-      <Route path='/admin/:data' element={<Admin/>}/>
-      <Route path='/admin/course/:data' element={<Course/>}/>
-      <Route path='/VarifyDoc/:type/:adminID/:ID' element={<VarifyDoc/>}/>
-      <Route 
-        path='/anatomy' 
-        element={
-          <ProtectedRoute>
-            <Anatomy3D/>
-          </ProtectedRoute>
-        }
-      />
-      <Route path='/Student/Dashboard/:ID' element={<StudentLayout/>}>
+      <Route path='/forgetPassword' element={<Forgetpassword/>}/>
+      <Route path='/student/forgetPassword/:token' element={<ResetPassword/>}/>
+      <Route path='/teacher/forgetPassword/:token' element={<ResetTeacher/>}/>
+      
+      {/* Protected Routes */}
+      <Route path='/User/Dashboard/:userid' element={
+        <ProtectedRoute allowedRoles={['user']}>
+          <UserDashboard/>
+        </ProtectedRoute>
+      }/>
+      
+      <Route path='/Search/:subject' element={
+        <ProtectedRoute>
+          <SearchData/>
+        </ProtectedRoute>
+      }/>
+      
+      <Route path='/StudentDocument/:Data' element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <StudentDocument/>
+        </ProtectedRoute>
+      }/>
+      
+      <Route path='/TeacherDocument/:Data' element={
+        <ProtectedRoute allowedRoles={['teacher']}>
+          <TeacherDocument/>
+        </ProtectedRoute>
+      }/>
+      
+      <Route path='/courses' element={
+        <ProtectedRoute>
+          <MedicalCourses/>
+        </ProtectedRoute>
+      }/>
+      
+      <Route path='/chat' element={
+        <ProtectedRoute>
+          <Chatbot/>
+        </ProtectedRoute>
+      }/>
+      
+      <Route path='/admin/:data' element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <Admin/>
+        </ProtectedRoute>
+      }/>
+      
+      <Route path='/admin/course/:data' element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <Course/>
+        </ProtectedRoute>
+      }/>
+      
+      <Route path='/VarifyDoc/:type/:adminID/:ID' element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <VarifyDoc/>
+        </ProtectedRoute>
+      }/>
+      
+      <Route path='/anatomy' element={
+        <ProtectedRoute>
+          <Anatomy3D/>
+        </ProtectedRoute>
+      }/>
+      
+      {/* Student Dashboard Routes */}
+      <Route path='/Student/Dashboard/:ID' element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <StudentLayout/>
+        </ProtectedRoute>
+      }>
         <Route path='/Student/Dashboard/:ID/Welcome' element={<WelcomeMedical/>}/>
         <Route path='/Student/Dashboard/:ID/Search' element={<SearchTeacher/>}/>
         <Route path='/Student/Dashboard/:ID/Classes' element={<StudentClasses/>}/>
@@ -90,21 +142,22 @@ const router = createBrowserRouter(
               }
             />  */}
       </Route>
-      <Route path='/Teacher/Dashboard/:ID' element={<TeacherLayout/>}>
+      
+      {/* Teacher Dashboard Routes */}
+      <Route path='/Teacher/Dashboard/:ID' element={
+        <ProtectedRoute allowedRoles={['teacher']}>
+          <TeacherLayout/>
+        </ProtectedRoute>
+      }>
         <Route path='/Teacher/Dashboard/:ID/Home' element={<DashboardTeacher/>}/>
         <Route path='/Teacher/Dashboard/:ID/Classes' element={<TeacherClasses/>}/>
         <Route path='/Teacher/Dashboard/:ID/Courses' element={<TeacherCourses/>}/>
       </Route>
-
-      <Route path='/forgetPassword' element={<Forgetpassword/>}/>
-      <Route path='/student/forgetPassword/:token' element={<ResetPassword/>}/>
-      <Route path='/teacher/forgetPassword/:token' element={<ResetTeacher/>}/>
       
-    
+      {/* 404 Route */}
       <Route path='*' element={<ErrorPage/>}/>
     </Route>
-    
- )
+  )
 )
 
 ReactDOM.createRoot(document.getElementById('root')).render(

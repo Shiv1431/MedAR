@@ -1,42 +1,93 @@
-import axios from "axios"
+import env from '../config/env';
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json'
+const API_URL = env.API_BASE_URL;
+
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Something went wrong');
   }
-})
+  return response.json();
+};
 
-// Add a request interceptor to include the token in all requests
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token")
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+const getHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
+export const api = {
+  get: async (endpoint) => {
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: getHeaders(),
+        mode: 'cors',
+      });
+      return handleResponse(response);
+    } catch (error) {
+      if (env.ENABLE_LOGGING) {
+        console.error('API Error:', error);
+      }
+      throw error;
     }
-    return config
   },
-  (error) => {
-    return Promise.reject(error)
-  },
-)
 
-// Add a response interceptor to handle token expiration
-api.interceptors.response.use(
-  (response) => {
-    return response
-  },
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem("token")
-      localStorage.removeItem("user")
-      window.location.href = "/login"
+  post: async (endpoint, data) => {
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+        mode: 'cors',
+      });
+      return handleResponse(response);
+    } catch (error) {
+      if (env.ENABLE_LOGGING) {
+        console.error('API Error:', error);
+      }
+      throw error;
     }
-    return Promise.reject(error)
   },
-)
 
-export default api
+  put: async (endpoint, data) => {
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+        mode: 'cors',
+      });
+      return handleResponse(response);
+    } catch (error) {
+      if (env.ENABLE_LOGGING) {
+        console.error('API Error:', error);
+      }
+      throw error;
+    }
+  },
+
+  delete: async (endpoint) => {
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: getHeaders(),
+        mode: 'cors',
+      });
+      return handleResponse(response);
+    } catch (error) {
+      if (env.ENABLE_LOGGING) {
+        console.error('API Error:', error);
+      }
+      throw error;
+    }
+  },
+};
 

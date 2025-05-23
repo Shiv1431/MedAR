@@ -43,11 +43,14 @@ export const login = async (credentials) => {
     const requestData = {
       Email: credentials.email,
       Password: credentials.password,
+      UserType: credentials.userType
     };
 
     console.log('Login request data:', requestData); // Debug log
 
-    const response = await apiService.post('/student/login', requestData);
+    // Use the correct endpoint based on user type
+    const endpoint = credentials.userType === 'student' ? '/student/login' : '/teacher/login';
+    const response = await apiService.post(endpoint, requestData);
     console.log('Login response:', response); // Debug log
     return response;
   } catch (error) {

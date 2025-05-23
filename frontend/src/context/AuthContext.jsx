@@ -58,6 +58,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password, userType) => {
     try {
       setLoading(true);
+      console.log('Login attempt with userType:', userType); // Debug log
       const response = await apiLogin({ email, password, userType });
 
       if (response.success) {
@@ -65,12 +66,17 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         setUser(user);
         toast.success('Login successful!');
+        
+        // Ensure we're using the correct path based on userType
+        const redirectPath = userType === 'student' 
+          ? `/Student/Dashboard/${user._id}/Welcome`
+          : `/Teacher/Dashboard/${user._id}/Welcome`;
+        
+        console.log('Login successful, redirecting to:', redirectPath); // Debug log
         return {
           success: true,
           user,
-          redirectPath: user.role === 'student' 
-            ? `/Student/Dashboard/${user._id}/Welcome`
-            : `/Teacher/Dashboard/${user._id}/Welcome`
+          redirectPath
         };
       } else {
         toast.error(response.message || 'Login failed');

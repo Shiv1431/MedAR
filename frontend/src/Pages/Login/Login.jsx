@@ -7,7 +7,6 @@ import Navbar from "../../Components/Navbar/Navbar";
 import Footer from '../../Components/Footer/Footer';
 import { useAuth } from "../../context/AuthContext";
 import './Login.css';
-import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 export default function Login() {
@@ -73,7 +72,13 @@ export default function Login() {
       console.log('Login result:', result); // Debug log
       
       if (result.success) {
-        navigate(result.redirectPath);
+        // Ensure we're using the correct path based on userType
+        const redirectPath = formData.userType === 'student' 
+          ? `/Student/Dashboard/${result.user._id}/Welcome`
+          : `/Teacher/Dashboard/${result.user._id}/Welcome`;
+        
+        console.log('Redirecting to:', redirectPath); // Debug log
+        navigate(redirectPath);
       } else {
         setErrors(prev => ({
           ...prev,
@@ -167,6 +172,7 @@ export default function Login() {
                     <Radiobtn 
                       userType={formData.userType} 
                       setUserType={(type) => {
+                        console.log('Setting user type to:', type); // Debug log
                         setFormData(prev => ({ ...prev, userType: type }));
                         if (errors.userType) {
                           setErrors(prev => ({ ...prev, userType: "" }));

@@ -100,8 +100,8 @@ export default function Login() {
         
         console.log('Redirecting to:', redirectPath);
         
-        // Use navigate for client-side routing
-        navigate(redirectPath);
+        // Use window.location for full page reload to ensure clean state
+        window.location.href = `${window.location.origin}${redirectPath}`;
         
         // Show success message
         toast.success('Login successful!');

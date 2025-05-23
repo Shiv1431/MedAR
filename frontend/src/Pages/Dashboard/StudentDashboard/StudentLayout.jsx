@@ -13,32 +13,40 @@ const StudentLayout = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStudentData = async () => {
+    const initializeLayout = async () => {
       try {
-        if (!user || !userType) {
-          console.log('No user or userType found, redirecting to login');
+        // Check if we have the necessary data in localStorage
+        const storedUser = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('token');
+        const storedUserType = localStorage.getItem('userType');
+        const storedUserId = localStorage.getItem('userId');
+
+        if (!storedUser || !storedToken || !storedUserType || !storedUserId) {
+          console.log('Missing authentication data, redirecting to login');
           navigate('/login');
           return;
         }
 
-        if (userType !== 'student') {
+        if (storedUserType !== 'student') {
           console.log('User is not a student, redirecting to login');
           navigate('/login');
           return;
         }
 
-        if (user._id !== ID) {
+        if (storedUserId !== ID) {
           console.log('User ID mismatch, redirecting to correct dashboard');
-          navigate(`/Student/Dashboard/${user._id}/Welcome`);
+          navigate(`/Student/Dashboard/${storedUserId}/Welcome`);
           return;
         }
+
+        // Set up axios default header
+        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
 
         // Fetch student data
         const response = await axios.get(
           `${import.meta.env.VITE_API_BASE_URL}/api/student/${ID}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'
             },
             withCredentials: true
@@ -52,8 +60,13 @@ const StudentLayout = () => {
           toast.error('Failed to load student data');
         }
       } catch (error) {
-        console.error('Error fetching student data:', error);
+        console.error('Error initializing layout:', error);
         if (error.response?.status === 401) {
+          // Clear invalid data
+          localStorage.removeItem('token');
+          localStorage.removeItem('userType');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('user');
           navigate('/login');
         } else {
           toast.error('Failed to load student data');
@@ -63,8 +76,8 @@ const StudentLayout = () => {
       }
     };
 
-    fetchStudentData();
-  }, [user, userType, ID, navigate]);
+    initializeLayout();
+  }, [ID, navigate]);
 
   if (loading || isLoading) {
     return (
@@ -74,7 +87,7 @@ const StudentLayout = () => {
     );
   }
 
-  if (!user || userType !== 'student') {
+  if (!studentData) {
     return null;
   }
 

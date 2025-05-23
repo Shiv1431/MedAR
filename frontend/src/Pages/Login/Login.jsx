@@ -75,14 +75,19 @@ export default function Login() {
         // Store user type and token in localStorage
         localStorage.setItem('userType', formData.userType);
         localStorage.setItem('token', result.data.token);
+        localStorage.setItem('userId', result.data.user._id);
         
-        // Navigate based on user type
-        const redirectPath = formData.userType === 'student' 
-          ? `/Student/Dashboard/${result.data.user._id}/Welcome`
-          : `/Teacher/Dashboard/${result.data.user._id}/Welcome`;
+        // Ensure we're using the correct user type for redirection
+        if (formData.userType === 'student') {
+          const studentPath = `/Student/Dashboard/${result.data.user._id}/Welcome`;
+          console.log('Redirecting student to:', studentPath);
+          navigate(studentPath);
+        } else {
+          const teacherPath = `/Teacher/Dashboard/${result.data.user._id}/Welcome`;
+          console.log('Redirecting teacher to:', teacherPath);
+          navigate(teacherPath);
+        }
         
-        console.log('Redirecting to:', redirectPath);
-        navigate(redirectPath);
         toast.success('Login successful!');
       } else {
         const errorMessage = result.message || "Login failed. Please try again.";

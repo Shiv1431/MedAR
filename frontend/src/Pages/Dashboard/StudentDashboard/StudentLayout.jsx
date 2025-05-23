@@ -2,24 +2,46 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import { FaBars, FaTimes, FaHome, FaBook, FaChalkboardTeacher, FaUser } from 'react-icons/fa';
 import { useAuth } from '../../../context/AuthContext';
+import { getProfile } from '../../../services/api';
 import './StudentLayout.css';
 
 const StudentLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [studentData, setStudentData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { ID } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
 
   useEffect(() => {
-    // Verify token and user type on mount
-    const token = localStorage.getItem('token');
-    const userType = localStorage.getItem('userType');
-    
-    if (!token || userType !== 'student') {
-      navigate('/login');
-    }
-  }, [navigate]);
+    const verifyAndFetchData = async () => {
+      const token = localStorage.getItem('token');
+      const userType = localStorage.getItem('userType');
+      
+      if (!token || userType !== 'student') {
+        navigate('/login');
+        return;
+      }
+
+      try {
+        const response = await getProfile('student', ID);
+        if (response.success) {
+          setStudentData(response.data);
+        } else {
+          console.error('Failed to fetch student data');
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+        navigate('/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifyAndFetchData();
+  }, [navigate, ID]);
 
   const menuItems = [
     { path: 'Welcome', icon: <FaHome />, label: 'Dashboard' },
@@ -33,6 +55,7 @@ const StudentLayout = () => {
       await logout('student');
       localStorage.removeItem('token');
       localStorage.removeItem('userType');
+      localStorage.removeItem('userId');
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
@@ -42,6 +65,14 @@ const StudentLayout = () => {
   const isActive = (path) => {
     return location.pathname.includes(path);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -56,6 +87,26 @@ const StudentLayout = () => {
             {isSidebarOpen ? <FaTimes /> : <FaBars />}
           </button>
         </div>
+
+        {studentData && (
+          <div className="student-info">
+            <div className="student-avatar">
+              {studentData.profilePicture ? (
+                <img src={studentData.profilePicture} alt="Profile" />
+              ) : (
+                <div className="avatar-placeholder">
+                  {studentData.name?.charAt(0) || 'S'}
+                </div>
+              )}
+            </div>
+            {isSidebarOpen && (
+              <div className="student-details">
+                <h3 className="student-name">{studentData.name}</h3>
+                <p className="student-role">Student</p>
+              </div>
+            )}
+          </div>
+        )}
 
         <nav className="sidebar-nav">
           {menuItems.map((item) => (
@@ -84,7 +135,7 @@ const StudentLayout = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
           <div className="container mx-auto px-6 py-8">
-            <Outlet />
+            <Outlet context={{ studentData }} />
           </div>
         </main>
       </div>

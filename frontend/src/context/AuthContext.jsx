@@ -3,14 +3,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { login as apiLogin, signup as apiSignup, logout as apiLogout } from '../services/api';
-import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -67,18 +65,26 @@ export const AuthProvider = ({ children }) => {
         setUser(user);
         toast.success('Login successful!');
         
-        // Redirect based on user role with correct URL structure
+        // Return the redirect path based on user role
         if (user.role === 'student') {
-          navigate(`/Student/Dashboard/${user._id}/Welcome`);
+          return {
+            success: true,
+            redirectPath: `/Student/Dashboard/${user._id}/Welcome`
+          };
         } else if (user.role === 'teacher') {
-          navigate(`/Teacher/Dashboard/${user._id}/Welcome`);
+          return {
+            success: true,
+            redirectPath: `/Teacher/Dashboard/${user._id}/Welcome`
+          };
         }
       } else {
         toast.error(response.message || 'Login failed');
+        return { success: false, message: response.message };
       }
     } catch (error) {
       console.error('Login error:', error);
       toast.error(error.response?.data?.message || 'Login failed');
+      return { success: false, message: 'Login failed' };
     } finally {
       setLoading(false);
     }

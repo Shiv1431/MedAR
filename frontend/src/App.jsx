@@ -1,147 +1,95 @@
-import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 
-// Layouts
-const StudentLayout = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/StudentLayout'));
-const TeacherLayout = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/TeacherLayout'));
-
-// Pages
-const Login = React.lazy(() => import('./Pages/Login/Login'));
-const Signup = React.lazy(() => import('./Pages/Signup/Signup'));
-const Anatomy3D = React.lazy(() => import('./Pages/Anatomy/Anatomy3D'));
-
-// Dashboard Pages
-const StudentWelcome = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/Welcome'));
-const TeacherWelcome = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/TeacherWelcome'));
-const Profile = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/Profile'));
-const StudentCourses = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/Courses'));
-const StudentClasses = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/Classes'));
-const SearchTeacher = React.lazy(() => import('./Pages/Dashboard/StudentDashboard/SearchTeacher'));
-const TeacherProfile = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/Profile'));
-const TeacherCourses = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/Courses'));
-const TeacherStudents = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/Students'));
-const TeacherSchedule = React.lazy(() => import('./Pages/Dashboard/TeacherDashboard/Schedule'));
+// Lazy load components
+const Login = lazy(() => import('./Pages/Login/Login'));
+const Signup = lazy(() => import('./Pages/Signup/Signup'));
+const StudentLayout = lazy(() => import('./Pages/Dashboard/StudentDashboard/StudentLayout'));
+const Welcome = lazy(() => import('./Pages/Dashboard/StudentDashboard/Welcome'));
+const Courses = lazy(() => import('./Pages/Dashboard/StudentDashboard/Courses'));
+const ClassMentor = lazy(() => import('./Pages/Dashboard/StudentDashboard/ClassMentor'));
+const Profile = lazy(() => import('./Pages/Dashboard/StudentDashboard/Profile'));
+const TeacherLayout = lazy(() => import('./Pages/Dashboard/TeacherDashboard/TeacherLayout'));
+const TeacherWelcome = lazy(() => import('./Pages/Dashboard/TeacherDashboard/TeacherWelcome'));
+const TeacherProfile = lazy(() => import('./Pages/Dashboard/TeacherDashboard/Profile'));
+const TeacherCourses = lazy(() => import('./Pages/Dashboard/TeacherDashboard/Courses'));
+const TeacherStudents = lazy(() => import('./Pages/Dashboard/TeacherDashboard/Students'));
+const TeacherSchedule = lazy(() => import('./Pages/Dashboard/TeacherDashboard/Schedule'));
 
 // Components
-const Navbar = React.lazy(() => import('./Components/Navbar/Navbar'));
-const Footer = React.lazy(() => import('./Components/Footer/Footer'));
+const Navbar = lazy(() => import('./Components/Navbar/Navbar'));
+const Footer = lazy(() => import('./Components/Footer/Footer'));
 
 // Loading component
 const Loading = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
   </div>
 );
 
-// Protected Route Component
-const ProtectedRoute = () => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <Loading />;
-  }
-
-  if (!user) {
+// Protected Route component
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  const userType = localStorage.getItem('userType');
+  
+  if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />;
+  return children;
 };
 
-const AppContent = () => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <Loading />;
-  }
-
-  const renderDashboard = () => {
-    if (!user) return <Navigate to="/login" replace />;
-    
-    const dashboardPath = user.role === 'student' 
-      ? `/Student/Dashboard/${user._id}/Welcome`
-      : `/Teacher/Dashboard/${user._id}/Welcome`;
-    
-    return <Navigate to={dashboardPath} replace />;
-  };
-
-  return (
-    <Suspense fallback={<Loading />}>
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={renderDashboard()} />
-            <Route 
-              path="/login" 
-              element={!user ? <Login /> : renderDashboard()} 
-            />
-            <Route 
-              path="/signup" 
-              element={!user ? <Signup /> : renderDashboard()} 
-            />
-            
-            {/* Protected Routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/anatomy" element={<Anatomy3D />} />
-              
-              {/* Student Dashboard Routes */}
-              <Route path="/Student/Dashboard/:ID" element={<StudentLayout />}>
-                <Route index element={<Navigate to="Welcome" replace />} />
-                <Route path="Welcome" element={<StudentWelcome />} />
-                <Route path="AR-Anatomy" element={<Anatomy3D />} />
-                <Route path="Profile" element={<Profile />} />
-                <Route path="Courses" element={<StudentCourses />} />
-                <Route path="Classes" element={<StudentClasses />} />
-                <Route path="Search" element={<SearchTeacher />} />
-              </Route>
-              
-              {/* Teacher Dashboard Routes */}
-              <Route path="/Teacher/Dashboard/:ID" element={<TeacherLayout />}>
-                <Route index element={<Navigate to="Welcome" replace />} />
-                <Route path="Welcome" element={<TeacherWelcome />} />
-                <Route path="Profile" element={<TeacherProfile />} />
-                <Route path="Courses" element={<TeacherCourses />} />
-                <Route path="Students" element={<TeacherStudents />} />
-                <Route path="Schedule" element={<TeacherSchedule />} />
-              </Route>
-            </Route>
-            
-            {/* Catch all other routes */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Suspense>
-  );
-};
-
-const App = () => {
+function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen bg-gray-50">
-          <AppContent />
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-          />
-        </div>
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+
+            {/* Student Dashboard Routes */}
+            <Route
+              path="/Student/Dashboard/:ID/*"
+              element={
+                <ProtectedRoute>
+                  <StudentLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="Welcome" replace />} />
+              <Route path="Welcome" element={<Welcome />} />
+              <Route path="Courses" element={<Courses />} />
+              <Route path="ClassMentor" element={<ClassMentor />} />
+              <Route path="Profile" element={<Profile />} />
+            </Route>
+
+            {/* Redirect root to login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            
+            {/* Teacher Dashboard Routes */}
+            <Route path="/Teacher/Dashboard/:ID" element={<TeacherLayout />}>
+              <Route index element={<Navigate to="Welcome" replace />} />
+              <Route path="Welcome" element={<TeacherWelcome />} />
+              <Route path="Profile" element={<TeacherProfile />} />
+              <Route path="Courses" element={<TeacherCourses />} />
+              <Route path="Students" element={<TeacherStudents />} />
+              <Route path="Schedule" element={<TeacherSchedule />} />
+            </Route>
+            
+            {/* Catch all route */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+          <ToastContainer position="top-right" autoClose={3000} />
+        </Suspense>
       </AuthProvider>
     </Router>
   );
-};
+}
 
 export default App; 

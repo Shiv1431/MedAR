@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, NavLink, useParams, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FaHome, FaSearch, FaBookMedical, FaVrCardboard, FaUserMd, FaUser, FaSignOutAlt } from 'react-icons/fa';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -8,6 +8,7 @@ import { useAuth } from '../../../context/AuthContext';
 const StudentLayout = () => {
   const { ID } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useAuth();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +26,7 @@ const StudentLayout = () => {
         console.error('Error fetching user data:', error);
         setLoading(false);
         if (error.response?.status === 401) {
-          navigate('/login');
+          window.location.href = `${import.meta.env.VITE_APP_URL}/login`;
         }
       }
     };
@@ -34,20 +35,20 @@ const StudentLayout = () => {
     if (token) {
       fetchUserData();
     } else {
-      navigate('/login');
+      window.location.href = `${import.meta.env.VITE_APP_URL}/login`;
     }
-  }, [ID, navigate]);
+  }, [ID]);
 
   const handleLogout = async (e) => {
     e.preventDefault();
     try {
       await logout('student');
-      navigate('/login');
+      window.location.href = `${import.meta.env.VITE_APP_URL}/login`;
     } catch (error) {
       console.error('Logout error:', error);
       localStorage.removeItem('token');
       localStorage.removeItem('userType');
-      navigate('/login');
+      window.location.href = `${import.meta.env.VITE_APP_URL}/login`;
     }
   };
 

@@ -79,14 +79,15 @@ export default function Login() {
         
         // Ensure we're using the correct user type for redirection
         if (formData.userType === 'student') {
-          const studentPath = `/Student/Dashboard/${result.data.user._id}`;
+          const studentPath = `/Student/Dashboard/${result.data.user._id}/Welcome`;
           console.log('Redirecting student to:', studentPath);
-          navigate(studentPath, { replace: true });
+          // Use window.location.href for absolute URL
+          window.location.href = `${import.meta.env.VITE_APP_URL}${studentPath}`;
           toast.success('Login successful!');
         } else {
           const teacherPath = `/Teacher/Dashboard/${result.data.user._id}`;
           console.log('Redirecting teacher to:', teacherPath);
-          navigate(teacherPath, { replace: true });
+          window.location.href = `${import.meta.env.VITE_APP_URL}${teacherPath}`;
           toast.success('Login successful!');
         }
       } else {

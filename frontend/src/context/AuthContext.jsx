@@ -60,6 +60,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Add useEffect to initialize auth when component mounts
+  useEffect(() => {
+    initializeAuth();
+  }, []);
+
   const login = async (email, password, type) => {
     try {
       console.log('Attempting login:', { email, type });

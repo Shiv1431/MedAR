@@ -66,10 +66,15 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, userType) => {
     try {
-      console.log('Attempting login with:', { email, userType });
+      // Remove any trailing /api from base URL to prevent double /api
+      const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
+      const loginUrl = `${baseUrl}/api/${userType}/login`;
       
+      console.log('Login URL:', loginUrl);
+      console.log('Login payload:', { Email: email, Password: password });
+
       const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/${userType}/login`,
+        loginUrl,
         { Email: email, Password: password },
         { 
           withCredentials: true,
@@ -97,6 +102,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         localStorage.setItem('userType', userType);
         localStorage.setItem('userId', user._id);
+        localStorage.setItem('user', JSON.stringify(user));
 
         // Set default auth header
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -116,7 +122,8 @@ export const AuthProvider = ({ children }) => {
       console.error('Login error:', {
         message: error.message,
         response: error.response?.data,
-        status: error.response?.status
+        status: error.response?.status,
+        url: error.config?.url
       });
 
       if (error.response) {
@@ -137,6 +144,11 @@ export const AuthProvider = ({ children }) => {
             return { 
               success: false, 
               message: data?.message || 'Incorrect password'
+            };
+          case 404:
+            return { 
+              success: false, 
+              message: 'Login endpoint not found. Please check server configuration.'
             };
           default:
             return { 
@@ -196,6 +208,48 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       localStorage.removeItem('userType');
       localStorage.removeItem('userId');
+    }
+  };
+
+  const verifyToken = async (userType) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('No token found');
+        return false;
+      }
+
+      // Remove any trailing /api from base URL
+      const baseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
+      const verifyUrl = `${baseUrl}/api/${userType}/verify-token`;
+
+      console.log('Verifying token at:', verifyUrl);
+      
+      const response = await axios.get(
+        verifyUrl,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
+        }
+      );
+
+      console.log('Token verification response:', response.data);
+      if (response.data.success) {
+        setUser(response.data.data.student);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Token verification failed:', error.response?.data || error.message);
+      localStorage.removeItem('token');
+      localStorage.removeItem('userType');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('user');
+      setUser(null);
+      return false;
     }
   };
 

@@ -19,7 +19,13 @@ const getHeaders = () => {
   };
 };
 
-export const api = {
+const api = {
+  defaults: {
+    headers: {
+      common: {}
+    }
+  },
+
   get: async (endpoint) => {
     try {
       const response = await fetch(`${API_URL}${endpoint}`, {
@@ -90,4 +96,6 @@ export const api = {
     }
   },
 };
+
+export default api;
 

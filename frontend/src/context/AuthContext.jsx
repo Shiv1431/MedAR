@@ -43,8 +43,8 @@ export function AuthProvider({ children }) {
           // If no saved user, try to fetch from API
           try {
             const response = await api.get(`/users/me`)
-            if (response.data && response.data.data) {
-              const userData = response.data.data.user
+            if (response && response.data) {
+              const userData = response.data.user
               setUser(userData)
               localStorage.setItem('user', JSON.stringify(userData))
             }
@@ -57,7 +57,7 @@ export function AuthProvider({ children }) {
       } catch (error) {
         console.error("Authentication error:", error)
         // Only clear data if token is invalid
-        if (error.response && error.response.status === 401) {
+        if (error.status === 401) {
           localStorage.removeItem("token")
           localStorage.removeItem("user")
           setUser(null)
@@ -89,21 +89,21 @@ export function AuthProvider({ children }) {
       // Log the full response for debugging
       console.log('Login response:', response)
 
-      if (!response.data || !response.data.success) {
-        throw new Error(response.data?.message || "Login failed")
+      if (!response || !response.success) {
+        throw new Error(response?.message || "Login failed")
       }
 
       // Extract user data and tokens from the response
-      const { data } = response.data
+      const { data } = response
       if (!data || !data.user) {
         throw new Error("Invalid response format: missing user data")
       }
 
       // Get the token from the response
-      const token = data.token || data.Token || response.data.token || response.data.Token
+      const token = data.token || data.Token || response.token || response.Token
       
       if (!token) {
-        console.error('No token found in response:', response.data)
+        console.error('No token found in response:', response)
         throw new Error("No authentication token received")
       }
 
@@ -133,31 +133,6 @@ export function AuthProvider({ children }) {
       return userData
     } catch (error) {
       console.error("Login error:", error)
-      
-      // Handle specific error cases
-      if (error.response) {
-        const { status, data } = error.response
-        
-        // Log the error response for debugging
-        console.log('Error response:', data)
-        
-        switch (status) {
-          case 422:
-            // Handle validation errors
-            if (data.errors) {
-              const errorMessage = Object.values(data.errors).join(', ')
-              throw new Error(errorMessage)
-            }
-            throw new Error(data.message || "Invalid email or password")
-          case 401:
-            throw new Error("Invalid credentials")
-          case 404:
-            throw new Error("User not found")
-          default:
-            throw new Error(data.message || "Login failed")
-        }
-      }
-      
       throw new Error(error.message || "Login failed")
     }
   }
@@ -165,11 +140,11 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     try {
       const response = await api.post("/auth/register", userData)
-      if (!response.data || !response.data.success) {
-        throw new Error(response.data?.message || "Registration failed")
+      if (!response || !response.success) {
+        throw new Error(response?.message || "Registration failed")
       }
 
-      const { data } = response.data
+      const { data } = response
       if (!data || !data.user || !data.token) {
         throw new Error("Invalid response format: missing user data or token")
       }
@@ -181,10 +156,7 @@ export function AuthProvider({ children }) {
       return data.user
     } catch (error) {
       console.error("Registration error:", error)
-      if (error.response) {
-        throw new Error(error.response.data?.message || "Registration failed")
-      }
-      throw new Error("Registration failed")
+      throw new Error(error.message || "Registration failed")
     }
   }
 
@@ -201,16 +173,19 @@ export function AuthProvider({ children }) {
         }
       }
       
-      // Clear client-side auth state
+      // Clear local storage and state
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      delete api.defaults.headers.common['Authorization'];
       setUser(null);
       
-      return true; // Indicate successful logout
+      // Clear auth header
+      delete api.defaults.headers.common["Authorization"];
     } catch (error) {
       console.error('Logout error:', error);
-      throw error; // Re-throw to allow error handling in components
+      // Still clear local data even if there's an error
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
     }
   }
 
@@ -219,9 +194,13 @@ export function AuthProvider({ children }) {
     loading,
     login,
     register,
-    logout,
+    logout
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 

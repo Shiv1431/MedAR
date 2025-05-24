@@ -98,7 +98,16 @@ export const AuthProvider = ({ children }) => {
           setUser(user);
           return { success: true };
         } else {
-          throw new Error('Token verification failed after login');
+          // Clear data if verification fails
+          localStorage.removeItem('token');
+          localStorage.removeItem('userType');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('user');
+          delete axios.defaults.headers.common['Authorization'];
+          return { 
+            success: false, 
+            message: verifyResponse.message || 'Token verification failed'
+          };
         }
       } else {
         return { success: false, message: response.message };
@@ -111,7 +120,10 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('userId');
       localStorage.removeItem('user');
       delete axios.defaults.headers.common['Authorization'];
-      return { success: false, message: error.message };
+      return { 
+        success: false, 
+        message: error.response?.data?.message || error.message || 'Login failed'
+      };
     }
   };
 

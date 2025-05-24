@@ -148,7 +148,7 @@ export const verifyToken = async (userType) => {
       throw new Error('No token found in localStorage');
     }
 
-    // Ensure we're using the correct endpoint
+    // Ensure we're using the correct endpoint and token format
     const response = await api.get(`/${userType}/verify-token`, {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -160,10 +160,14 @@ export const verifyToken = async (userType) => {
       hasData: !!response.data.data
     });
     
-    return {
-      success: true,
-      data: response.data.data
-    };
+    if (response.data.success) {
+      return {
+        success: true,
+        data: response.data.data
+      };
+    } else {
+      throw new Error(response.data.message || 'Token verification failed');
+    }
   } catch (error) {
     console.error('Token verification error:', {
       message: error.message,
@@ -171,6 +175,13 @@ export const verifyToken = async (userType) => {
       status: error.response?.status,
       headers: error.config?.headers
     });
+    
+    // Clear invalid token
+    localStorage.removeItem('token');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('user');
+    
     return {
       success: false,
       message: error.response?.data?.message || 'Token verification failed'
